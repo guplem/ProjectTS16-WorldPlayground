@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Boo.Lang;
 using UnityEngine;
 
 public class WorldManager : MonoBehaviour
@@ -82,9 +83,9 @@ public class WorldManager : MonoBehaviour
         return new Vector2Int(((int)(position.x/ChunkManager.size.x))*ChunkManager.size.x, ((int)(position.z/ChunkManager.size.x))*ChunkManager.size.x);
     }
     
-    private Vector2Int[] GetAllChunkPositionsInRadius(int radiusInChunks)
+    private HashSet<Vector2Int> GetAllChunkPositionsInRadius(int radiusInChunks)
     {
-        List<Vector2Int> chunkCoords = new List<Vector2Int>();
+        HashSet<Vector2Int> chunkCoords = new HashSet<Vector2Int>();
         int radiusSqr = radiusInChunks * radiusInChunks;
 
         Vector2Int loadingCenterPos = WorldPositionToChunkPosition(loadingCenter.transform.position);
@@ -93,65 +94,54 @@ public class WorldManager : MonoBehaviour
                 if (x*x+z*z<=radiusSqr)
                     chunkCoords.Add(new Vector2Int(x*ChunkManager.size.x + loadingCenterPos.x, z*ChunkManager.size.x + loadingCenterPos.y));
 
-        return chunkCoords.ToArray();
+        return chunkCoords;
     }
 
-    private HashSet<ChunkManager> GetChunksOutsideRadius(int radius)
+    private HashSet<ChunkManager> GetGeneratedChunksNotIn(HashSet<Vector2Int> positions)
     {
-        HashSet<ChunkManager> chunksToRegenerate = new HashSet<ChunkManager>();
-        foreach (ChunkManager generatedChunk in chunks)
-        {
-            if (Vector2.Distance(
-                    generatedChunk.transform.position.ToVector2WithoutY(),
-                    loadingCenter.position.ToVector2WithoutY())
-                > radius * ChunkManager.size.x)
-            {
-                chunksToRegenerate.Add(generatedChunk);
-            }
-        }
+        HashSet<ChunkManager> chunksToDestroy = new HashSet<ChunkManager>();
+        
+        foreach (ChunkManager chunk in chunks)
+            if (!positions.Contains(chunk.position))
+                chunksToDestroy.Add(chunk);
 
-        return chunksToRegenerate;
+        return chunksToDestroy;
     }
 
     IEnumerator GenerateChunks() {
         while (true)
         {
-            // Get chunks that shouldn't be generated now
-            ChunkManager[] chunksToRegenerate = GetChunksOutsideRadius(radiusGenerationChunksChecks).ToArray();
+            // Get the positions that should have chunks at the moment
+            HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(radiusGenerationChunksChecks);
             
-            // Remove the chunks that should be generated
+            // Get chunks that shouldn't be generated now as they are (need to be moved)
+            ChunkManager[] chunksToRegenerate = GetGeneratedChunksNotIn(positionsWhereAChunkMustExist).ToArray();
+            // Remove (from the list) the chunks that shouldn't exist/be generated at the moment
             foreach (ChunkManager chunkToRegenerate in chunksToRegenerate)
                 chunks.Remove(chunkToRegenerate);
 
-            // Look for what chunks are missing to generate
-            Vector2Int[] chunkPositionsInArea = GetAllChunkPositionsInRadius(radiusGenerationChunksChecks);
-            HashSet<Vector2Int> remainingChunksToGeneratePositions = new HashSet<Vector2Int>();
-            for (int c = 0; c < chunkPositionsInArea.Length; c++)
-            {
-                bool found = false;
-                foreach (var chunk in chunks)
-                {
-                    if (chunk.position.Equals(chunkPositionsInArea[c]))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    remainingChunksToGeneratePositions.Add(chunkPositionsInArea[c]);
-            }
-            Debug.Log("Chunks to rebuild: " + remainingChunksToGeneratePositions.Count);
+            // Look where new chunks must generate
+            HashSet<Vector2Int> positionsOfCurrentChunks = new HashSet<Vector2Int>();
+            foreach (ChunkManager chunk in chunks)
+                positionsOfCurrentChunks.Add(chunk.position);
+            HashSet<Vector2Int> positionsWhereAChunkMustGenerate = new HashSet<Vector2Int>(positionsWhereAChunkMustExist.Except(positionsOfCurrentChunks));
 
-            // Generate the missing chunks
+            // Generate the chunks in the new positions that should have one now
             int chunkToGenerateIndex = 0;
-            foreach (Vector2Int chunkToGeneratePosition in remainingChunksToGeneratePositions)
+            foreach (Vector2Int chunkToGeneratePosition in positionsWhereAChunkMustGenerate)
             {
                 ChunkManager newChunk;
-                
+
                 if (chunkToGenerateIndex < chunksToRegenerate.Length)
+                {
                     newChunk = chunksToRegenerate[chunkToGenerateIndex];
+                }
                 else
+                {
                     newChunk = Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, this.transform).GetComponent<ChunkManager>();
+                    if (positionsOfCurrentChunks.Count > 0) // Means that it is not the first run (where is normal that new chunks are instantiated)
+                        Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
+                }
 
                 newChunk.position = chunkToGeneratePosition; //TODO: change to move and generate data in position.
 
@@ -164,11 +154,11 @@ public class WorldManager : MonoBehaviour
             //Destroy non-necessary chunks
             for (int c = chunkToGenerateIndex; c < chunksToRegenerate.Length; c++)
             {
-                Debug.Log("Destroying " + chunksToRegenerate[c].gameObject.name);
+                Debug.LogWarning("Destroying " + chunksToRegenerate[c].gameObject.name + " because it was instantiated before and it is no longer necessary.");
                 Destroy(chunksToRegenerate[c].gameObject);
             }
             
-            Debug.Log("Generation cycle completed");
+            Debug.Log("Generation cycle completed. New chunks: " + chunkToGenerateIndex + ". Total number of chunks: " + chunks.Count);
             yield return new WaitForSeconds(deltaTimeBetweenGenerationChunksChecks);
         }
     }
