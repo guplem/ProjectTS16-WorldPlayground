@@ -21,6 +21,9 @@ public class ChunkManager : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
-        Gizmos.DrawWireCube(transform.position+Vector3.up*size.y/2, new Vector3(size.x, size.y, size.x));
+        //Gizmos.DrawWireCube(transform.position+Vector3.up*size.y/2, new Vector3(size.x, size.y, size.x));
+        Gizmos.DrawWireCube(transform.position, new Vector3(size.x, 0, size.x));
     }
+    
+    
 }
