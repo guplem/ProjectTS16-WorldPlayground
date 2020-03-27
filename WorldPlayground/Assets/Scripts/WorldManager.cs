@@ -143,7 +143,7 @@ public class WorldManager : MonoBehaviour
                         Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
                 }
 
-                newChunk.position = chunkToGeneratePosition; //TODO: change to move and generate data in position.
+                newChunk.InitializeAt(chunkToGeneratePosition);
 
                 newChunk.gameObject.name = "Chunk " + chunkToGeneratePosition.x + "_" + chunkToGeneratePosition.y;
                 chunks.Add(newChunk);
