@@ -9,8 +9,7 @@ public class ChunkManager : MonoBehaviour
 {
     public static Vector2Int size = new Vector2Int(6,6); // XZ, Y     //    16, 256 // 10, 128
     public Vector2Int position { get; private set; }
-    private Cube[,,] chunkData = new Cube[size.x,size.y,size.x];
-    private Cube cube = new Cube();
+    private byte[,,] chunkData = new byte[size.x,size.y,size.x]; //Max qty of cubes = 256. Id range = [0, 255]
     [SerializeField] private MeshFilter meshFilter;
     
     private void OnDrawGizmos()
@@ -54,14 +53,14 @@ public class ChunkManager : MonoBehaviour
     private void GenerateChunkData()
     {
         //Clear previous data
-        chunkData = new Cube[size.x,size.y,size.x];
+        chunkData = new byte[size.x,size.y,size.x];
         
         //Create new data
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
                     //if (x >= y)
-                        chunkData[x, y, z] = cube;
+                        chunkData[x, y, z] = 0;
     }
 
     
@@ -81,7 +80,7 @@ public class ChunkManager : MonoBehaviour
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    if (chunkData[x, y, z] != null)
+                    //if (chunkData[x, y, z] != null) //If there is a cube in that place
                         AddVoxelDataToChunk(new Vector3(x, y, z));
         
         // Update the mesh
@@ -133,21 +132,22 @@ public class ChunkManager : MonoBehaviour
 
     private bool IsCubeOpaque(Vector3 cubePositionRelativeToTheChunk)
     {
-        //TODO: check for cube transparency, not only nullability
-        return GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,
-            (int) cubePositionRelativeToTheChunk.y, (int) cubePositionRelativeToTheChunk.z)) != null;
-
+        Cube cube = GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,
+            (int) cubePositionRelativeToTheChunk.y, (int) cubePositionRelativeToTheChunk.z));
+        
+        return cube != null && cube.isOpaque;
     }
 
     public Cube GetCubeFromRelativePosition(Vector3Int relativePositionToTheChunk)
     {
+        //TODO: get cube from adjacent chunk
         if (relativePositionToTheChunk.x >= size.x) return null;
         else if (relativePositionToTheChunk.z >= size.x) return null;
         else if (relativePositionToTheChunk.y >= size.y) return null;
         else if (relativePositionToTheChunk.x < 0) return null;
         else if (relativePositionToTheChunk.z < 0) return null;
         else if (relativePositionToTheChunk.y < 0) return null;
-        return chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z];
+        return WorldManager.Instance.GetCube(chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z]);
     }
 
     // Create a new mesh with the current mesh data of the chunk

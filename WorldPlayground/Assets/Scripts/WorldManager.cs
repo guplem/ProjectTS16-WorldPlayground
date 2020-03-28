@@ -5,12 +5,14 @@ using System.Linq;
 using Boo.Lang;
 using UnityEngine;
 
+[RequireComponent(typeof(CubesManager))]
 public class WorldManager : MonoBehaviour
 {
 
     [Tooltip("The transform that will be the center of the 'game action'")]
     [SerializeField] private Transform loadingCenter;
     [SerializeField] private GameObject chunkPrefab;
+    [SerializeField] public Material cubesMaterial;
     [Space]
     [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
     [SerializeField] private float deltaTimeBetweenGenerationChunksChecks;
@@ -25,11 +27,12 @@ public class WorldManager : MonoBehaviour
     [SerializeField] private int radiusActiveChunksChecks;
     [Tooltip("Max distance of the chunks visible at that moment.")]
     [SerializeField] private int radiusVisualChunksChecks;
-
+    
+    private CubesManager cubesManager;
     private HashSet<ChunkManager> chunks = new HashSet<ChunkManager>();
+
     
     public static WorldManager Instance { get; private set; }
-
     private void Awake()
     {
         if (Instance != null)
@@ -45,6 +48,7 @@ public class WorldManager : MonoBehaviour
 
     private void Start()
     {
+        cubesManager = this.GetComponentRequired<CubesManager>();
         CheckValuesValidity();
         
         StartCoroutine(nameof(GenerateChunks));
@@ -98,7 +102,6 @@ public class WorldManager : MonoBehaviour
         int radiusSqr = radiusInChunks * radiusInChunks;
 
         Vector2Int loadingCenterPos = WorldPositionToChunkPosition(loadingCenter.transform.position);
-        Debug.Log("CENTER: " + loadingCenterPos + "   of loading center: " + loadingCenter.position);
         for (int x = -radiusInChunks; x <= radiusInChunks; x++)
             for (int z = -radiusInChunks; z <= radiusInChunks; z++)
                 if (x*x+z*z<=radiusSqr)
@@ -185,5 +188,9 @@ public class WorldManager : MonoBehaviour
             yield return new WaitForSeconds(deltaTimeBetweenVisualChunksChecks);
         }
     }
-    
+
+    public Cube GetCube(byte cubeId)
+    {
+        return cubesManager.GetCube(cubeId);
+    }
 }

@@ -223,7 +223,7 @@ PrefabInstance:
     - target: {fileID: 3483402759744189680, guid: d0adc13f1c248d442bb1b66b2a574235,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 3483402759744189680, guid: d0adc13f1c248d442bb1b66b2a574235,
         type: 3}
@@ -358,21 +358,6 @@ PrefabInstance:
       propertyPath: loadingCenter
       value: 
       objectReference: {fileID: 317404523}
-    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
-        type: 3}
-      propertyPath: radiusVisualChunksChecks
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
-        type: 3}
-      propertyPath: radiusActiveChunksChecks
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
-        type: 3}
-      propertyPath: radiusGenerationChunksChecks
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 8104386872639039257, guid: 61a096324958c9a469c03d85bc032953,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -435,6 +420,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 61a096324958c9a469c03d85bc032953, type: 3}
+--- !u!1 &5091343261486733131 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8347800180876523974, guid: 61a096324958c9a469c03d85bc032953,
+    type: 3}
+  m_PrefabInstance: {fileID: 5091343261486733130}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5091343261486733132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5091343261486733131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 871c51ca91e1159448621a60597a89ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cubes:
+  - {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
 --- !u!1001 &8001368655079271932
 PrefabInstance:
   m_ObjectHideFlags: 0
