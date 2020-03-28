@@ -58,6 +58,6 @@ MonoBehaviour:
   deltaTimeBetweenGenerationChunksChecks: 2.1
   deltaTimeBetweenActiveChunksChecks: 1
   deltaTimeBetweenVisualChunksChecks: 0.6
-  radiusGenerationChunksChecks: 32
-  radiusActiveChunksChecks: 24
-  radiusVisualChunksChecks: 16
+  radiusGenerationChunksChecks: 5
+  radiusActiveChunksChecks: 4
+  radiusVisualChunksChecks: 3
