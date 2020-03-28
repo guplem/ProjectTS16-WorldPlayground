@@ -94,6 +94,25 @@ public class ChunkManager : MonoBehaviour
 		{
             if (!IsCubeOpaque(relativePosition+VoxelData.faceChecks[face])) //Check if face is visible 
             {
+                verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 0]]);
+                verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 1]]);
+                verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 2]]);
+                verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 3]]);
+                
+                uvs.Add(VoxelData.textureCoordinates[0]);
+                uvs.Add(VoxelData.textureCoordinates[1]);
+                uvs.Add(VoxelData.textureCoordinates[2]);
+                uvs.Add(VoxelData.textureCoordinates[3]);
+                
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex);
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex + 1);
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex + 2);
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex + 2);
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex + 1);
+                indexOfVerticesToFormTriangles.Add(currentVertexIndex + 3);
+                currentVertexIndex += 4;
+
+                /* // OLD METHOD - Adding duplicated vertices but easier tu underestand
                 for (int vertexNumber = 0; vertexNumber < 6; vertexNumber++) // 6 vertex per face
                 {
                     // Save the vertex position
@@ -106,7 +125,7 @@ public class ChunkManager : MonoBehaviour
 				
                     // Assign the texture coordinates for that vertex
                     uvs.Add(VoxelData.textureCoordinates[vertexNumber]);
-                }
+                }*/
             } 
 
 		}
