@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class ChunkManager : MonoBehaviour
 {
-    public static Vector2Int size = new Vector2Int(5,5); // XZ, Y     //    16, 256 // 10, 128
+    public static Vector2Int size = new Vector2Int(6,6); // XZ, Y     //    16, 256 // 10, 128
     public Vector2Int position { get; private set; }
     private Cube[,,] chunkData = new Cube[size.x,size.y,size.x];
     private Cube cube = new Cube();
@@ -16,10 +16,10 @@ public class ChunkManager : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
-        Gizmos.DrawWireCube(transform.position+Vector3.up*size.y/2, new Vector3(size.x, size.y, size.x));
+        Gizmos.DrawWireCube(transform.position+new Vector3(size.x-1, size.y-1, size.x-1)/2, new Vector3(size.x, size.y, size.x));
         //Gizmos.DrawWireCube(transform.position, new Vector3(size.x, 0, size.x));
 
-        /*Gizmos.color = new Color(35/255f, 110/225f, 34/225f);
+        Gizmos.color = new Color(35/255f, 110/225f, 34/225f);
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
@@ -27,16 +27,12 @@ public class ChunkManager : MonoBehaviour
                     Cube c = chunkData[x, y, z];
                     //if (c != null)
                         Gizmos.DrawSphere(GetPositionInRealWorldOfChunkDataAt(new Vector3Int(x,y,z)), 0.25f);
-                }*/
+                }
     }
 
     public Vector3 GetPositionInRealWorldOfChunkDataAt(Vector3Int vector3Int)
     {
-        return transform.position - new Vector3((size.x-1) / 2f, -0.5f, (size.x-1) / 2f) + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
-    }
-    public Vector3 GetChunkRelativePositionOfChunkDataAt(Vector3Int vector3Int)
-    {
-        return new Vector3((-size.x) / 2f, 0f, (-size.x) / 2f) + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
+        return transform.position + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
     }
 
     public void InitializeAt(Vector2Int position)
@@ -46,10 +42,10 @@ public class ChunkManager : MonoBehaviour
         this.position = position;
         
         // Generate the data
-        //GenerateChunkData();
+        GenerateChunkData();
         
         //Build the mesh with the chunk data //TODO: remove. Shouldn't happen 
-        UpdateMesh();
+        //UpdateMesh();
     }
 
     
@@ -57,6 +53,10 @@ public class ChunkManager : MonoBehaviour
     
     private void GenerateChunkData()
     {
+        //Clear previous data
+        chunkData = new Cube[size.x,size.y,size.x];
+        
+        //Create new data
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
@@ -75,35 +75,61 @@ public class ChunkManager : MonoBehaviour
     
     private void UpdateMesh()
     {
+        // Create mesh data
         currentVertexIndex = 0;
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    AddVoxelDataToChunk(GetChunkRelativePositionOfChunkDataAt(new Vector3Int(x, y, z)));
+                    AddVoxelDataToChunk(new Vector3Int(x, y, z));
         
+        // Update the mesh
         meshFilter.mesh = GetChunkMeshWithCurrentData();
     }
 
-    private void AddVoxelDataToChunk(Vector3 relativePosition)
+    private void AddVoxelDataToChunk(Vector3Int relativePosition)
     {
         for (int face = 0; face < 6; face++) // 6 faces in a cube
 		{
-			for (int vertexNumber = 0; vertexNumber < 6; vertexNumber++) // 6 vertex per face
-			{
-				// Save the vertex position
-				int vertexIndexOfTriangle = VoxelData.verticesOfFace[face, vertexNumber];
-				verticesInMesh.Add(VoxelData.vertexPosition[vertexIndexOfTriangle] + relativePosition);
+            if (IsCubeOpaque(relativePosition+VoxelData.faceChecks[face])) //Check if face is visible 
+            {
+                for (int vertexNumber = 0; vertexNumber < 6; vertexNumber++) // 6 vertex per face
+                {
+                    // Save the vertex position
+                    int vertexIndexOfTriangle = VoxelData.verticesOfFace[face, vertexNumber];
+                    verticesInMesh.Add(VoxelData.vertexPosition[vertexIndexOfTriangle] + relativePosition);
 
-                // Assign the vertex to the correspondent triangle
-				indexOfVerticesToFormTriangles.Add(currentVertexIndex);
-				currentVertexIndex++;
+                    // Assign the vertex to the correspondent triangle
+                    indexOfVerticesToFormTriangles.Add(currentVertexIndex);
+                    currentVertexIndex++;
 				
-				// Assign the texture coordinates for that vertex
-				uvs.Add(VoxelData.textureCoordinates[vertexNumber]);
-			}
+                    // Assign the texture coordinates for that vertex
+                    uvs.Add(VoxelData.textureCoordinates[vertexNumber]);
+                }
+            } 
+
 		}
     }
-    
+
+    private bool IsCubeOpaque(Vector3 cubePositionRelativeToTheChunk)
+    {
+        //TODO: check for cube transparency, not only nullability
+        return GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,
+            (int) cubePositionRelativeToTheChunk.y, (int) cubePositionRelativeToTheChunk.z)) == null;
+
+    }
+
+    public Cube GetCubeFromRelativePosition(Vector3Int relativePositionToTheChunk)
+    {
+        // TODO: Do properly // IT IS BUGGY
+        
+        if (relativePositionToTheChunk.x >= size.x/2) return null;
+        if (relativePositionToTheChunk.z >= size.x/2) return null;
+        if (relativePositionToTheChunk.x <= -size.x/2) return null;
+        if (relativePositionToTheChunk.z <= -size.x/2) return null;
+        if (relativePositionToTheChunk.y >= size.y) return null;
+        return cube;
+    }
+
     private Mesh GetChunkMeshWithCurrentData()
     {
         // Create a new mesh with all the information built before

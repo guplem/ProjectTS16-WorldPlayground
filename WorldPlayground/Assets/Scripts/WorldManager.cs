@@ -87,9 +87,9 @@ public class WorldManager : MonoBehaviour
 
     public Vector2Int WorldPositionToChunkPosition(Vector3 position)
     {
-        //return new Vector2Int(((int)(position.x/ChunkManager.size.x))*ChunkManager.size.x, ((int)(position.z/ChunkManager.size.x))*ChunkManager.size.x);
-        return new Vector2Int(Mathf.RoundToInt(position.x/ChunkManager.size.x)*ChunkManager.size.x, Mathf.RoundToInt(position.z/ChunkManager.size.x)*ChunkManager.size.x);
-        //return new Vector2Int(Mathf.CeilToInt(position.x/ChunkManager.size.x)*ChunkManager.size.x, Mathf.CeilToInt(position.z/ChunkManager.size.x)*ChunkManager.size.x);
+        return new Vector2Int(
+            Mathf.FloorToInt(position.x / ChunkManager.size.x) * ChunkManager.size.x,
+            Mathf.FloorToInt(position.z / ChunkManager.size.x) * ChunkManager.size.x);
     }
     
     private HashSet<Vector2Int> GetAllChunkPositionsInRadius(int radiusInChunks)
@@ -98,6 +98,7 @@ public class WorldManager : MonoBehaviour
         int radiusSqr = radiusInChunks * radiusInChunks;
 
         Vector2Int loadingCenterPos = WorldPositionToChunkPosition(loadingCenter.transform.position);
+        Debug.Log("CENTER: " + loadingCenterPos + "   of loading center: " + loadingCenter.position);
         for (int x = -radiusInChunks; x <= radiusInChunks; x++)
             for (int z = -radiusInChunks; z <= radiusInChunks; z++)
                 if (x*x+z*z<=radiusSqr)
