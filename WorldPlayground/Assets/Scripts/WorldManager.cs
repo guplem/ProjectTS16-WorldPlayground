@@ -65,6 +65,13 @@ public class WorldManager : MonoBehaviour
                 gameObject);
     }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        var center = WorldPositionToChunkPosition(loadingCenter.position);
+        Gizmos.DrawSphere(new Vector3(center.x, 0f, center.y), 0.5f);
+    }
+
     private bool CheckIfDeltaTimesAreMultiples()
     {
         return
@@ -80,7 +87,9 @@ public class WorldManager : MonoBehaviour
 
     public Vector2Int WorldPositionToChunkPosition(Vector3 position)
     {
-        return new Vector2Int(((int)(position.x/ChunkManager.size.x))*ChunkManager.size.x, ((int)(position.z/ChunkManager.size.x))*ChunkManager.size.x);
+        //return new Vector2Int(((int)(position.x/ChunkManager.size.x))*ChunkManager.size.x, ((int)(position.z/ChunkManager.size.x))*ChunkManager.size.x);
+        return new Vector2Int(Mathf.RoundToInt(position.x/ChunkManager.size.x)*ChunkManager.size.x, Mathf.RoundToInt(position.z/ChunkManager.size.x)*ChunkManager.size.x);
+        //return new Vector2Int(Mathf.CeilToInt(position.x/ChunkManager.size.x)*ChunkManager.size.x, Mathf.CeilToInt(position.z/ChunkManager.size.x)*ChunkManager.size.x);
     }
     
     private HashSet<Vector2Int> GetAllChunkPositionsInRadius(int radiusInChunks)
