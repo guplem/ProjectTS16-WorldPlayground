@@ -19,7 +19,7 @@ public class ChunkManager : MonoBehaviour
         Gizmos.DrawWireCube(transform.position+new Vector3(size.x-1, size.y-1, size.x-1)/2, new Vector3(size.x, size.y, size.x));
         //Gizmos.DrawWireCube(transform.position, new Vector3(size.x, 0, size.x));
 
-        Gizmos.color = new Color(35/255f, 110/225f, 34/225f);
+        /*Gizmos.color = new Color(35/255f, 110/225f, 34/225f);
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
@@ -27,7 +27,7 @@ public class ChunkManager : MonoBehaviour
                     Cube c = chunkData[x, y, z];
                     //if (c != null)
                         Gizmos.DrawSphere(GetPositionInRealWorldOfChunkDataAt(new Vector3Int(x,y,z)), 0.25f);
-                }
+                }*/
     }
 
     public Vector3 GetPositionInRealWorldOfChunkDataAt(Vector3Int vector3Int)
@@ -45,7 +45,7 @@ public class ChunkManager : MonoBehaviour
         GenerateChunkData();
         
         //Build the mesh with the chunk data //TODO: remove. Shouldn't happen 
-        //UpdateMesh();
+        UpdateMesh();
     }
 
     
@@ -60,7 +60,8 @@ public class ChunkManager : MonoBehaviour
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    chunkData[x, y, z] = cube;
+                    //if (x >= y)
+                        chunkData[x, y, z] = cube;
     }
 
     
@@ -80,17 +81,18 @@ public class ChunkManager : MonoBehaviour
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    AddVoxelDataToChunk(new Vector3Int(x, y, z));
+                    if (chunkData[x, y, z] != null)
+                        AddVoxelDataToChunk(new Vector3(x, y, z));
         
         // Update the mesh
         meshFilter.mesh = GetChunkMeshWithCurrentData();
     }
 
-    private void AddVoxelDataToChunk(Vector3Int relativePosition)
+    private void AddVoxelDataToChunk(Vector3 relativePosition)
     {
         for (int face = 0; face < 6; face++) // 6 faces in a cube
 		{
-            if (IsCubeOpaque(relativePosition+VoxelData.faceChecks[face])) //Check if face is visible 
+            if (!IsCubeOpaque(relativePosition+VoxelData.faceChecks[face])) //Check if face is visible 
             {
                 for (int vertexNumber = 0; vertexNumber < 6; vertexNumber++) // 6 vertex per face
                 {
@@ -114,25 +116,24 @@ public class ChunkManager : MonoBehaviour
     {
         //TODO: check for cube transparency, not only nullability
         return GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,
-            (int) cubePositionRelativeToTheChunk.y, (int) cubePositionRelativeToTheChunk.z)) == null;
+            (int) cubePositionRelativeToTheChunk.y, (int) cubePositionRelativeToTheChunk.z)) != null;
 
     }
 
     public Cube GetCubeFromRelativePosition(Vector3Int relativePositionToTheChunk)
     {
-        // TODO: Do properly // IT IS BUGGY
-        
-        if (relativePositionToTheChunk.x >= size.x/2) return null;
-        if (relativePositionToTheChunk.z >= size.x/2) return null;
-        if (relativePositionToTheChunk.x <= -size.x/2) return null;
-        if (relativePositionToTheChunk.z <= -size.x/2) return null;
-        if (relativePositionToTheChunk.y >= size.y) return null;
-        return cube;
+        if (relativePositionToTheChunk.x >= size.x) return null;
+        else if (relativePositionToTheChunk.z >= size.x) return null;
+        else if (relativePositionToTheChunk.y >= size.y) return null;
+        else if (relativePositionToTheChunk.x < 0) return null;
+        else if (relativePositionToTheChunk.z < 0) return null;
+        else if (relativePositionToTheChunk.y < 0) return null;
+        return chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z];
     }
 
+    // Create a new mesh with the current mesh data of the chunk
     private Mesh GetChunkMeshWithCurrentData()
     {
-        // Create a new mesh with all the information built before
         Mesh mesh = new Mesh
         {
             vertices = verticesInMesh.ToArray(),
