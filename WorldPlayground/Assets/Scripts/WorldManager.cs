@@ -151,10 +151,9 @@ public class WorldManager : MonoBehaviour
                     if (positionsOfCurrentChunks.Count > 0) // Means that it is not the first run (where is normal that new chunks are instantiated)
                         Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
                 }
-
-                newChunk.InitializeAt(chunkToGeneratePosition);
-
+                
                 newChunk.gameObject.name = "Chunk " + chunkToGeneratePosition.x + "_" + chunkToGeneratePosition.y;
+                newChunk.InitializeAt(chunkToGeneratePosition);
                 chunks.Add(newChunk);
                 
                 chunkToGenerateIndex++;

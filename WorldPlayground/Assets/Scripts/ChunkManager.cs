@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class ChunkManager : MonoBehaviour
 {
-    public static Vector2Int size = new Vector2Int(10,128); // XZ, Y     //    16, 256
+    public static Vector2Int size = new Vector2Int(5,5); // XZ, Y     //    16, 256 // 10, 128
     public Vector2Int position { get; private set; }
     private Cube[,,] chunkData = new Cube[size.x,size.y,size.x];
     private Cube cube = new Cube();
@@ -25,7 +25,7 @@ public class ChunkManager : MonoBehaviour
                 for (int z = 0; z < size.x; z++)
                 {
                     Cube c = chunkData[x, y, z];
-                    if (c != null)
+                    //if (c != null)
                         Gizmos.DrawSphere(GetPositionInRealWorldOfChunkDataAt(new Vector3Int(x,y,z)), 0.25f);
                 }*/
     }
@@ -33,6 +33,10 @@ public class ChunkManager : MonoBehaviour
     public Vector3 GetPositionInRealWorldOfChunkDataAt(Vector3Int vector3Int)
     {
         return transform.position - new Vector3((size.x-1) / 2f, -0.5f, (size.x-1) / 2f) + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
+    }
+    public Vector3 GetChunkRelativePositionOfChunkDataAt(Vector3Int vector3Int)
+    {
+        return new Vector3((-size.x) / 2f, 0f, (-size.x) / 2f) + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
     }
 
     public void InitializeAt(Vector2Int position)
@@ -42,20 +46,21 @@ public class ChunkManager : MonoBehaviour
         this.position = position;
         
         // Generate the data
-        GenerateChunkData();
-        
+        //GenerateChunkData();
         
         //Build the mesh with the chunk data //TODO: remove. Shouldn't happen 
         UpdateMesh();
     }
 
+    
+    
+    
     private void GenerateChunkData()
     {
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    if (y < 100)
-                        chunkData[x, y, z] = cube;
+                    chunkData[x, y, z] = cube;
     }
 
     
@@ -66,27 +71,32 @@ public class ChunkManager : MonoBehaviour
     List<Vector3> verticesInMesh = new List<Vector3>(); // All mesh vertices
     List<int> indexOfVerticesToFormTriangles = new List<int>(); // Index of the vertices that will form each of the triangles (that form all the faces). They must be in order (and grouped by 3) to form every triangle, so the total size must be a multiple of 3)
     List<Vector2> uvs = new List<Vector2>(); // Texture mapping values (texture coordinates for each vertex with the same index as the coordinate in this list)
+    int currentVertexIndex = 0;
     
     private void UpdateMesh()
     {
-        GenerateMeshData();
+        currentVertexIndex = 0;
+        for (int y = 0; y < size.y; y++)
+            for (int x = 0; x < size.x; x++)
+                for (int z = 0; z < size.x; z++)
+                    AddVoxelDataToChunk(GetChunkRelativePositionOfChunkDataAt(new Vector3Int(x, y, z)));
+        
         meshFilter.mesh = GetChunkMeshWithCurrentData();
     }
 
-    private void GenerateMeshData()
+    private void AddVoxelDataToChunk(Vector3 relativePosition)
     {
-		int vertexIndex = 0;
-		for (int face = 0; face < 6; face++) // 6 faces in a cube
+        for (int face = 0; face < 6; face++) // 6 faces in a cube
 		{
 			for (int vertexNumber = 0; vertexNumber < 6; vertexNumber++) // 6 vertex per face
 			{
 				// Save the vertex position
 				int vertexIndexOfTriangle = VoxelData.verticesOfFace[face, vertexNumber];
-				verticesInMesh.Add(VoxelData.vertexPosition[vertexIndexOfTriangle]);
-				
-				// Assign the vertex to the correspondent triangle
-				indexOfVerticesToFormTriangles.Add(vertexIndex);
-				vertexIndex++;
+				verticesInMesh.Add(VoxelData.vertexPosition[vertexIndexOfTriangle] + relativePosition);
+
+                // Assign the vertex to the correspondent triangle
+				indexOfVerticesToFormTriangles.Add(currentVertexIndex);
+				currentVertexIndex++;
 				
 				// Assign the texture coordinates for that vertex
 				uvs.Add(VoxelData.textureCoordinates[vertexNumber]);

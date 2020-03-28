@@ -4,15 +4,15 @@ using UnityEngine;
 
 public struct VoxelData {
 	
-	public static readonly Vector3[] vertexPosition = new Vector3[8] {
-		new Vector3(0.0f, 0.0f, 0.0f),
-		new Vector3(1.0f, 0.0f, 0.0f),
-		new Vector3(1.0f, 1.0f, 0.0f),
-		new Vector3(0.0f, 1.0f, 0.0f),
-		new Vector3(0.0f, 0.0f, 1.0f),
-		new Vector3(1.0f, 0.0f, 1.0f),
-		new Vector3(1.0f, 1.0f, 1.0f),
-		new Vector3(0.0f, 1.0f, 1.0f),
+	public static readonly Vector3Int[] vertexPosition = new Vector3Int[8] {
+		new Vector3Int(0, 0, 0),
+		new Vector3Int(1, 0, 0),
+		new Vector3Int(1, 1, 0),
+		new Vector3Int(0, 1, 0),
+		new Vector3Int(0, 0, 1),
+		new Vector3Int(1, 0, 1),
+		new Vector3Int(1, 1, 1),
+		new Vector3Int(0, 1, 1),
 	};
 
 	public static readonly int[,] verticesOfFace = new int[6,6] { // [face, vertex number] (the vertices are in order)
@@ -24,13 +24,13 @@ public struct VoxelData {
 		{1, 2, 5, 5, 2, 6} // Right Face
 	};
 
-	public static readonly Vector2[] textureCoordinates = new Vector2[6] {
-		new Vector2 (0.0f, 0.0f),
-		new Vector2 (0.0f, 1.0f),
-		new Vector2 (1.0f, 0.0f),
-		new Vector2 (1.0f, 0.0f),
-		new Vector2 (0.0f, 1.0f),
-		new Vector2 (1.0f, 1.0f)
+	public static readonly Vector2Int[] textureCoordinates = new Vector2Int[6] {
+		new Vector2Int (0, 0),
+		new Vector2Int (0, 1),
+		new Vector2Int (1, 0),
+		new Vector2Int (1, 0),
+		new Vector2Int (0, 1),
+		new Vector2Int (1, 1)
 	};
 
 

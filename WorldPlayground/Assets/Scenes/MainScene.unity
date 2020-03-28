@@ -358,6 +358,21 @@ PrefabInstance:
       propertyPath: loadingCenter
       value: 
       objectReference: {fileID: 317404523}
+    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
+        type: 3}
+      propertyPath: radiusVisualChunksChecks
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
+        type: 3}
+      propertyPath: radiusActiveChunksChecks
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8091498862916658087, guid: 61a096324958c9a469c03d85bc032953,
+        type: 3}
+      propertyPath: radiusGenerationChunksChecks
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8104386872639039257, guid: 61a096324958c9a469c03d85bc032953,
         type: 3}
       propertyPath: m_LocalPosition.x
