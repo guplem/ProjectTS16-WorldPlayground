@@ -23,9 +23,7 @@ public class ChunkManager : MonoBehaviour
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
                 {
-                    Cube c = chunkData[x, y, z];
-                    //if (c != null)
-                        Gizmos.DrawSphere(GetPositionInRealWorldOfChunkDataAt(new Vector3Int(x,y,z)), 0.25f);
+                    Gizmos.DrawSphere(GetPositionInRealWorldOfChunkDataAt(new Vector3Int(x,y,z)), 0.25f);
                 }*/
     }
 
@@ -60,7 +58,7 @@ public class ChunkManager : MonoBehaviour
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
                     //if (x >= y)
-                        chunkData[x, y, z] = 0;
+                        chunkData[x, y, z] = WorldGenerator.Instance.GetCube(new Vector3Int(x, y, z)).byteId;
     }
 
     
@@ -93,15 +91,14 @@ public class ChunkManager : MonoBehaviour
 		{
             if (!IsCubeOpaque(relativePosition+VoxelData.faceChecks[face])) //Check if face is visible 
             {
+                byte blockId = chunkData[(int) relativePosition.x, (int) relativePosition.y, (int) relativePosition.z];
+                
                 verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 0]]);
                 verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 1]]);
                 verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 2]]);
                 verticesInMesh.Add(relativePosition + VoxelData.vertexPosition[VoxelData.verticesOfFace[face, 3]]);
                 
-                uvs.Add(VoxelData.textureCoordinates[0]);
-                uvs.Add(VoxelData.textureCoordinates[1]);
-                uvs.Add(VoxelData.textureCoordinates[2]);
-                uvs.Add(VoxelData.textureCoordinates[3]);
+                AddTexture(CubesManager.Instance.GetCube(blockId).GetTextureId(face));
                 
                 indexOfVerticesToFormTriangles.Add(currentVertexIndex);
                 indexOfVerticesToFormTriangles.Add(currentVertexIndex + 1);
@@ -130,6 +127,22 @@ public class ChunkManager : MonoBehaviour
 		}
     }
 
+    private void AddTexture(int textureId)
+    {
+        float y = textureId / CubesManager.textureAtlasSizeInBlocks;
+        float x = textureId - (y * CubesManager.textureAtlasSizeInBlocks);
+
+        x *= CubesManager.normalizedBlockTextureSize;
+        y *= CubesManager.normalizedBlockTextureSize;
+
+        y = 1f - y - CubesManager.normalizedBlockTextureSize;
+
+        uvs.Add(new Vector2(x, y));
+        uvs.Add(new Vector2(x, y + CubesManager.normalizedBlockTextureSize));
+        uvs.Add(new Vector2(x + CubesManager.normalizedBlockTextureSize, y));
+        uvs.Add(new Vector2(x + CubesManager.normalizedBlockTextureSize, y + CubesManager.normalizedBlockTextureSize));
+    }
+
     private bool IsCubeOpaque(Vector3 cubePositionRelativeToTheChunk)
     {
         Cube cube = GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,
@@ -147,7 +160,7 @@ public class ChunkManager : MonoBehaviour
         else if (relativePositionToTheChunk.x < 0) return null;
         else if (relativePositionToTheChunk.z < 0) return null;
         else if (relativePositionToTheChunk.y < 0) return null;
-        return WorldManager.Instance.GetCube(chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z]);
+        return CubesManager.Instance.GetCube(chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z]);
     }
 
     // Create a new mesh with the current mesh data of the chunk
@@ -163,4 +176,6 @@ public class ChunkManager : MonoBehaviour
         mesh.RecalculateNormals();
         return mesh;
     }
+    
+    
 }

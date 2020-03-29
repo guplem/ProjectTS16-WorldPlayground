@@ -5,14 +5,13 @@ using System.Linq;
 using Boo.Lang;
 using UnityEngine;
 
-[RequireComponent(typeof(CubesManager))]
 public class WorldManager : MonoBehaviour
 {
 
     [Tooltip("The transform that will be the center of the 'game action'")]
     [SerializeField] private Transform loadingCenter;
     [SerializeField] private GameObject chunkPrefab;
-    [SerializeField] public Material cubesMaterial;
+
     [Space]
     [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
     [SerializeField] private float deltaTimeBetweenGenerationChunksChecks;
@@ -48,7 +47,6 @@ public class WorldManager : MonoBehaviour
 
     private void Start()
     {
-        cubesManager = this.GetComponentRequired<CubesManager>();
         CheckValuesValidity();
         
         StartCoroutine(nameof(GenerateChunks));
@@ -189,8 +187,5 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    public Cube GetCube(byte cubeId)
-    {
-        return cubesManager.GetCube(cubeId);
-    }
+
 }

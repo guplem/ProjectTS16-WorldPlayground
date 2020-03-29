@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 8104386872639039257}
   - component: {fileID: 4673946136082512107}
   - component: {fileID: 8091498862916658087}
+  - component: {fileID: 5091343261486733132}
+  - component: {fileID: 5091343261486733136}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -61,3 +63,34 @@ MonoBehaviour:
   radiusGenerationChunksChecks: 5
   radiusActiveChunksChecks: 4
   radiusVisualChunksChecks: 3
+--- !u!114 &5091343261486733132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8347800180876523974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 871c51ca91e1159448621a60597a89ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cubes:
+  - {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
+  - {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}
+  - {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
+--- !u!114 &5091343261486733136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8347800180876523974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45755c6a0d313be469671e8972e12291, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
+  middleCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
+  topEdge: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}

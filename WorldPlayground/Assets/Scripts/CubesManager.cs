@@ -4,8 +4,25 @@ using UnityEngine;
 
 public class CubesManager : MonoBehaviour
 {
+    public static readonly int textureAtlasSizeInBlocks = 4;
+    public static readonly float normalizedBlockTextureSize = 1f / textureAtlasSizeInBlocks;
+    
     [SerializeField] private Cube[] cubes; //Max qty of cubes = 256. Id range = [0, 255]
-
+    
+    
+    public static CubesManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogWarning("Multiple WorldManager exist. Destroying the last one registered.", gameObject);
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
     private void Start()
     {
         if (cubes.Length > 256)
