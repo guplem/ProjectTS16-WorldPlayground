@@ -1,0 +1,40 @@
+/*[Tooltip("Time between each check of the chunks that should be active at that moment.")]
+[SerializeField] private float deltaTimeBetweenActiveChunksChecks;
+[Tooltip("Time between each check of the chunks that should be visible at that moment.")]
+[SerializeField] private float deltaTimeBetweenVisualChunksChecks;*/
+
+
+/*[Tooltip("Max distance of the chunks active at that moment.")]
+[SerializeField] private int radiusActiveChunks;
+[Tooltip("Max distance of the chunks visible at that moment.")]
+[SerializeField] private int radiusVisualChunks;*/
+
+
+
+private void CheckValuesValidity()
+{
+    if (radiusGenerationChunks <= radiusActiveChunks)
+        Debug.LogError("The radiusGenerationChunksChecks must greater than radiusActiveChunksChecks", gameObject);
+    if (radiusActiveChunks <= radiusVisualChunks)
+        Debug.LogError("The radiusActiveChunksChecks must greater than radiusVisualChunksChecks", gameObject);
+
+    if (CheckIfDeltaTimesAreMultiples())
+        Debug.LogWarning(
+            "The values of deltaTimeBetweenGenerationChunksChecks, deltaTimeBetweenActiveChunksChecks and deltaTimeBetweenVisualChunksChecks shouldn't be multiples to avoid lag spikes.",
+            gameObject);
+}
+
+
+
+private bool CheckIfDeltaTimesAreMultiples()
+{
+    return
+        deltaTimeBetweenChunkGeneration % deltaTimeBetweenActiveChunksChecks == 0 ||
+        deltaTimeBetweenChunkGeneration % deltaTimeBetweenVisualChunksChecks == 0 ||
+
+        deltaTimeBetweenActiveChunksChecks % deltaTimeBetweenChunkGeneration == 0 ||
+        deltaTimeBetweenActiveChunksChecks % deltaTimeBetweenVisualChunksChecks == 0 ||
+
+        deltaTimeBetweenVisualChunksChecks % deltaTimeBetweenChunkGeneration == 0 ||
+        deltaTimeBetweenVisualChunksChecks % deltaTimeBetweenActiveChunksChecks == 0;
+}

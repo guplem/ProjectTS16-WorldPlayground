@@ -5,13 +5,14 @@ using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
-public class ChunkManager : MonoBehaviour
+public class Chunk : MonoBehaviour
 {
     public static Vector2Int size = new Vector2Int(6,6); // XZ, Y     //    16, 256 // 10, 128
     public Vector2Int position { get; private set; }
     private byte[,,] chunkData = new byte[size.x,size.y,size.x]; //Max qty of cubes = 256. Id range = [0, 255]
     [SerializeField] private MeshFilter meshFilter;
-    
+    public Vector2Int arrayPos;
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
@@ -70,7 +71,7 @@ public class ChunkManager : MonoBehaviour
     List<int> indexOfVerticesToFormTriangles = new List<int>(); // Index of the vertices that will form each of the triangles (that form all the faces). They must be in order (and grouped by 3) to form every triangle, so the total size must be a multiple of 3)
     List<Vector2> uvs = new List<Vector2>(); // Texture mapping values (texture coordinates for each vertex with the same index as the coordinate in this list)
     int currentVertexIndex = 0;
-    
+
     private void UpdateMesh()
     {
         // Create mesh data

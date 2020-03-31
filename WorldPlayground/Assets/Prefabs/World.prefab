@@ -57,12 +57,8 @@ MonoBehaviour:
   loadingCenter: {fileID: 0}
   chunkPrefab: {fileID: 1116597137998671553, guid: 07f3cbeef037fc1408dd800a68a74ff8,
     type: 3}
-  deltaTimeBetweenGenerationChunksChecks: 2.1
-  deltaTimeBetweenActiveChunksChecks: 1
-  deltaTimeBetweenVisualChunksChecks: 0.6
-  radiusGenerationChunksChecks: 5
-  radiusActiveChunksChecks: 4
-  radiusVisualChunksChecks: 3
+  deltaTimeBetweenChunkGeneration: 1
+  radiusGenerationChunks: 10
 --- !u!114 &5091343261486733132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,6 +72,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cubes:
+  - {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
   - {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
   - {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}
   - {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
@@ -91,6 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45755c6a0d313be469671e8972e12291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  empty: {fileID: 11400000, guid: ba555b44ba106864a833a69e6fe07ed9, type: 2}
   bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
   middleCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
   topEdge: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}

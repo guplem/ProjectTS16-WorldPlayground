@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class WorldGenerator : MonoBehaviour
 {
+    [SerializeField] private Cube empty;
     [SerializeField] private Cube bottomEdge;
     [SerializeField] private Cube middleCube;
     [SerializeField] private Cube topEdge;
