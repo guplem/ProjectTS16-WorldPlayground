@@ -5,20 +5,21 @@ using UnityEngine;
 
 public class ChunkGenerator
 {
-    public void GenerateChunks(HashSet<Chunk> currentChunks, GameObject chunkPrefab, Vector2Int centralChunkPosition, int radiusGenerationChunks)
+    // Returns true if new chunks have been generated
+    public bool GenerateChunks(HashSet<Chunk> chunks, GameObject chunkPrefab, Vector2Int centralChunkPosition, int radiusGenerationChunks)
     {
         // Get the positions that should have chunks at the moment
         HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(centralChunkPosition, radiusGenerationChunks);
         
         // Get chunks that shouldn't be generated now as they are (need to be moved)
-        Chunk[] chunksToRegenerate = GetGeneratedChunksNotIn(positionsWhereAChunkMustExist, currentChunks).ToArray();
+        Chunk[] chunksToRegenerate = GetChunksWithPositionNotIn(positionsWhereAChunkMustExist, chunks).ToArray();
         // Remove (from the list) the chunks that shouldn't exist/be generated at the moment
         foreach (Chunk chunkToRegenerate in chunksToRegenerate)
-            currentChunks.Remove(chunkToRegenerate);
+            chunks.Remove(chunkToRegenerate);
 
         // Look where new chunks must generate
         HashSet<Vector2Int> positionsOfCurrentChunks = new HashSet<Vector2Int>();
-        foreach (Chunk chunk in currentChunks)
+        foreach (Chunk chunk in chunks)
             positionsOfCurrentChunks.Add(chunk.position);
         HashSet<Vector2Int> positionsWhereAChunkMustGenerate = new HashSet<Vector2Int>(positionsWhereAChunkMustExist.Except(positionsOfCurrentChunks));
 
@@ -40,8 +41,9 @@ public class ChunkGenerator
             }
             
             newChunk.gameObject.name = "Chunk " + chunkToGeneratePosition.x + "_" + chunkToGeneratePosition.y;
-            newChunk.InitializeAt(chunkToGeneratePosition);
-            currentChunks.Add(newChunk);
+            newChunk.SetPosition(chunkToGeneratePosition);
+            newChunk.GenerateChunkData();
+            chunks.Add(newChunk);
             
             chunkToGenerateIndex++;
         }
@@ -53,7 +55,9 @@ public class ChunkGenerator
             MonoBehaviour.Destroy(chunksToRegenerate[c].gameObject);
         }
         
-        Debug.Log("Generation cycle completed. New chunks: " + chunkToGenerateIndex + ". Total number of chunks: " + currentChunks.Count);
+        Debug.Log("Generation cycle completed. New chunks: " + chunkToGenerateIndex + ". Total number of chunks: " + chunks.Count);
+
+        return chunkToGenerateIndex > 0;
     }
     
     
@@ -71,16 +75,14 @@ public class ChunkGenerator
         return chunkCoords;
     }
     
-    
-    
-    private HashSet<Chunk> GetGeneratedChunksNotIn(HashSet<Vector2Int> positions, HashSet<Chunk> currentChunks)
+    private HashSet<Chunk> GetChunksWithPositionNotIn(HashSet<Vector2Int> positions, HashSet<Chunk> chunks)
     {
-        HashSet<Chunk> chunksToDestroy = new HashSet<Chunk>();
+        HashSet<Chunk> chunksWithPositionNotInCollection = new HashSet<Chunk>();
         
-        foreach (Chunk chunk in currentChunks)
+        foreach (Chunk chunk in chunks)
             if (!positions.Contains(chunk.position))
-                chunksToDestroy.Add(chunk);
+                chunksWithPositionNotInCollection.Add(chunk);
 
-        return chunksToDestroy;
+        return chunksWithPositionNotInCollection;
     }
 }

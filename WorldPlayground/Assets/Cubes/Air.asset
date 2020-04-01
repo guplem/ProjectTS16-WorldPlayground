@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23c652abe8608554ebf7de4b83ac2689, type: 3}
   m_Name: Air
   m_EditorClassIdentifier: 
-  id: -1
-  cubeName: DefaultName
-  isOpaque: 1
+  id: 0
+  cubeName: Air
+  isOpaque: 0
+  isVisible: 0
+  isSolid: 0
   backFaceTexture: 0
   frontFaceTexture: 0
   topFaceTexture: 0

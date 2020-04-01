@@ -11,6 +11,8 @@ public class Cube : ScriptableObject
     public byte byteId => (byte) id;
     public string cubeName = "DefaultName";
     public bool isOpaque = true;
+    public bool isVisible = true;
+    public bool isSolid = true;
     
     [Header("Texture values")]
     public int backFaceTexture;
