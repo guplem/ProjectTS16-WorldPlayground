@@ -8,6 +8,7 @@ using UnityEngine;
 public class Chunk : MonoBehaviour
 {
     [SerializeField] private MeshFilter meshFilter;
+    [SerializeField] private MeshRenderer meshRenderer;
     
     public static readonly Vector2Int size = new Vector2Int(10,100); // XZ, Y     //    16, 256 // 10, 128
     
@@ -100,10 +101,16 @@ public class Chunk : MonoBehaviour
                 for (int z = 0; z < size.x; z++)
                     chunkData[x, y, z] = WorldGenerator.Instance.GetCube(GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
     }
+
+    public void DisableMeshRenderer()
+    {
+        meshRenderer.enabled = false;
+    }
     
-    public void UpdateMesh()
+    public void UpdateMesh(bool enableMeshRenderer = true)
     {
         meshFilter.mesh = ChunkMeshGenerator.GetMeshOf(this, chunkData);
+        meshRenderer.enabled = true;
     }
 
     

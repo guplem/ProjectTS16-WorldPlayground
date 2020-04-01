@@ -38,3 +38,12 @@ private bool CheckIfDeltaTimesAreMultiples()
         deltaTimeBetweenVisualChunksChecks % deltaTimeBetweenChunkGeneration == 0 ||
         deltaTimeBetweenVisualChunksChecks % deltaTimeBetweenActiveChunksChecks == 0;
 }
+
+
+
+// TO CHECK PERFORMANCE
+Stopwatch stopwatch = Stopwatch.StartNew();
+
+// Do some shit
+
+stopwatch.Stop(); Debug.Log("Stopwatch stop. Time = " + stopwatch.ElapsedMilliseconds + "ms");
