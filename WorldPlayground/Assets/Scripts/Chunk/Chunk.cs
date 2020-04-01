@@ -9,7 +9,7 @@ public class Chunk : MonoBehaviour
 {
     [SerializeField] private MeshFilter meshFilter;
     
-    public static readonly Vector2Int size = new Vector2Int(6,6); // XZ, Y     //    16, 256 // 10, 128
+    public static readonly Vector2Int size = new Vector2Int(10,100); // XZ, Y     //    16, 256 // 10, 128
     
     public Vector2Int position { get; private set; }
     public Vector2Int arrayPos;
@@ -98,7 +98,7 @@ public class Chunk : MonoBehaviour
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
-                    chunkData[x, y, z] = WorldGenerator.Instance.GetCube(new Vector3Int(x, y, z)).byteId;
+                    chunkData[x, y, z] = WorldGenerator.Instance.GetCube(GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
     }
     
     public void UpdateMesh()

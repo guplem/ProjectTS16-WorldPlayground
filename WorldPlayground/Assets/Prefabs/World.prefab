@@ -88,7 +88,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45755c6a0d313be469671e8972e12291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minSurfaceHeight: 40
+  maxSurfaceHeight: 100
+  seed: 50
+  frequency: 75
   empty: {fileID: 11400000, guid: ba555b44ba106864a833a69e6fe07ed9, type: 2}
   bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
-  middleCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
-  topEdge: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}
+  fillingCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
+  surfaceCube: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}
