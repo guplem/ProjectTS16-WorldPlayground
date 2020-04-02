@@ -21,9 +21,10 @@ public class CubesManager : MonoBehaviour
         else
         {
             Instance = this;
+            SetupCubes();
         }
     }
-    private void Start()
+    private void SetupCubes()
     {
         if (cubes.Length > 256)
             Debug.LogError("There are too many cubes. THe maximum qty of cubes is 256. The range of the cube's Id is [0, 255]");

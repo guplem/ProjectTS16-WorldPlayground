@@ -58,7 +58,10 @@ MonoBehaviour:
   chunkPrefab: {fileID: 1116597137998671553, guid: 07f3cbeef037fc1408dd800a68a74ff8,
     type: 3}
   timeBetweenGenerationOfChunks: 1
-  radiusOfGeneratedChunks: 10
+  radiusOfGeneratedChunks: 15
+  radiusOfDrawnChunks: 5
+  chunksToDrawSortedByDistance: []
+  notDrawnChunksWithDataSortedByDistance: []
 --- !u!114 &5091343261486733132
 MonoBehaviour:
   m_ObjectHideFlags: 0

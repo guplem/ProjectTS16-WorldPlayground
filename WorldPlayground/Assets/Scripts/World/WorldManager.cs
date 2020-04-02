@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Boo.Lang;
+
 using UnityEngine;
 
 public class WorldManager : MonoBehaviour
@@ -16,14 +15,17 @@ public class WorldManager : MonoBehaviour
     [SerializeField] private float timeBetweenGenerationOfChunks = 1f;
     [Space]
     [Tooltip("Max distance of the chunks generated at that moment.")]
-    [SerializeField] private int radiusOfGeneratedChunks = 5;
-    
-    private Vector2Int centralChunkPosition;
-    
+    [SerializeField] private int radiusOfGeneratedChunks = 10;
+    [SerializeField] private int radiusOfDrawnChunks = 5;
+
+    public Vector2Int centralChunkPosition { get; private set; }
+
     private ChunkGenerator chunkGenerator;
     
     private HashSet<Chunk> chunks = new HashSet<Chunk>();
     public Chunk[,] chunksArray { get; private set; }
+    public List<Chunk> chunksToDrawSortedByDistance = new List<Chunk>();
+    public List<Chunk> notDrawnChunksWithDataSortedByDistance = new List<Chunk>();
 
     public static WorldManager Instance { get; private set; }
     
@@ -45,7 +47,7 @@ public class WorldManager : MonoBehaviour
     private void Start()
     {
         chunkGenerator = new ChunkGenerator();
-        StartCoroutine(nameof(GenerateChunks));
+        StartCoroutine(nameof(UpdateChunks));
     }
     
     private void OnDrawGizmos()
@@ -84,21 +86,50 @@ public class WorldManager : MonoBehaviour
         return retValue;
     }
 
-    private IEnumerator GenerateChunks() {
+    private void Update()
+    {
+        // Start the calculus of a mesh each frame
+        CalculateMeshOfTheClosestChunkWithData();
+        // Draw one each frame
+        DrawTheClosesAvailableChunk();
+    }
+
+    private void DrawTheClosesAvailableChunk()
+    {
+        lock (chunksToDrawSortedByDistance)
+        {
+            if (chunksToDrawSortedByDistance.Count <= 0) return;
+
+            Chunk chunkToDraw = chunksToDrawSortedByDistance[0];
+        
+            chunkToDraw.DrawChunk();
+            chunksToDrawSortedByDistance.Remove(chunkToDraw);
+        }
+
+    }
+    
+    private void CalculateMeshOfTheClosestChunkWithData()
+    {
+        lock (notDrawnChunksWithDataSortedByDistance)
+        {
+            if (notDrawnChunksWithDataSortedByDistance.Count <= 0) return;
+
+            //if (distance > radiusOfDrawnChunks) return;
+
+            Chunk chunkToDraw = notDrawnChunksWithDataSortedByDistance[0];
+
+            chunkToDraw.UpdateMeshToDrawChunk();
+            notDrawnChunksWithDataSortedByDistance.Remove(chunkToDraw);
+        }
+    }
+
+    private IEnumerator UpdateChunks() {
         while (true)
         {
             if (UpdateCentralChunkPosition() || chunks.Count == 0)
-            {
                 if (chunkGenerator.GenerateChunks(chunks, chunkPrefab, centralChunkPosition, radiusOfGeneratedChunks))
-                {
                     UpdateChunksArray();
-                    
-                    foreach (Chunk chunk in chunks)
-                        chunk.UpdateMesh();
-                }
-                    
-            }
-            
+
             yield return new WaitForSeconds(timeBetweenGenerationOfChunks);
         }
     }

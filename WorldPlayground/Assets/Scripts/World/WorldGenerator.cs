@@ -58,12 +58,15 @@ public class WorldGenerator : MonoBehaviour
         
         
         
+        
         // World height generation
         int terrainHeight = Mathf.RoundToInt(minSurfaceHeight + Mathf.PerlinNoise(position.x/frequency+seed, position.z/frequency+seed) * (maxSurfaceHeight-minSurfaceHeight));
         if (position.y < terrainHeight)
             return fillingCube;
         if (position.y == terrainHeight)
             return surfaceCube;
+        
+        
         
         
         

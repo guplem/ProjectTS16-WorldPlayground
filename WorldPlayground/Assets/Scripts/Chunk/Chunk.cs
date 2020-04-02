@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -15,7 +16,10 @@ public class Chunk : MonoBehaviour
     public Vector2Int position { get; private set; }
     public Vector2Int arrayPos;
 
-    private byte[,,] chunkData;// { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
+    private byte[,,] chunkData = new byte[size.x,size.y,size.x];// { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
+    private MeshData meshData = new MeshData();
+
+    private Thread thread;
 
     private void OnDrawGizmos()
     {
@@ -30,7 +34,7 @@ public class Chunk : MonoBehaviour
 
     public Vector3 GetWorldPositionFromRelativePosition(Vector3Int vector3Int)
     {
-        return transform.position + new Vector3(vector3Int.x, vector3Int.y, vector3Int.z);
+        return new Vector3(vector3Int.x + position.x, vector3Int.y, vector3Int.z + position.y);
     }
 
     public Cube GetCubeFromRelativePosition(Vector3Int relativePositionToTheChunk)
@@ -82,34 +86,79 @@ public class Chunk : MonoBehaviour
     
     
     
-// ==================== SETUP AND DEBUG ==================== //
+// ==================== SETUP ==================== //
 
     public void SetPosition(Vector2Int position)
     {
+        if (this.position == position)
+            return;
+        
+        
         transform.position = new Vector3(position.x, 0, position.y);
         this.position = position;
+
+        // Stop the threads
+        thread?.Abort();
+
+        // Reset the chunk
+        lock (WorldManager.Instance.chunksToDrawSortedByDistance)
+            WorldManager.Instance.chunksToDrawSortedByDistance.Remove(this);
+        lock (WorldManager.Instance.notDrawnChunksWithDataSortedByDistance)
+            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Remove(this);
+        
+        DisableMeshRenderer();
+        ClearChunkData();
     }
 
+    
+    
     public void GenerateChunkData()
     {
-        //Clear previous data
-        chunkData = new byte[size.x,size.y,size.x];
+        if (thread != null && thread.IsAlive)
+            Debug.LogWarning("The thread is alive and shouldn't to execute GenerateChunkData");
         
-        //Create new data
+        thread = new Thread(new ThreadStart(ThreadedChunkDataGenerator));
+        thread.Start();
+    }
+
+    private void ThreadedChunkDataGenerator()
+    {
         for (int y = 0; y < size.y; y++)
             for (int x = 0; x < size.x; x++)
                 for (int z = 0; z < size.x; z++)
                     chunkData[x, y, z] = WorldGenerator.Instance.GetCube(GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
+        
+        lock (WorldManager.Instance.notDrawnChunksWithDataSortedByDistance)
+        {
+            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Add(this);
+            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Sort((c1, c2) => (int) (Vector2Int.Distance(c1.position, WorldManager.Instance.centralChunkPosition) - Vector2Int.Distance(c2.position, WorldManager.Instance.centralChunkPosition)));
+        }
     }
 
+    private void ClearChunkData()
+    {
+        chunkData = new byte[size.x,size.y,size.x];
+    }
+
+    
+    
     public void DisableMeshRenderer()
     {
         meshRenderer.enabled = false;
     }
     
-    public void UpdateMesh(bool enableMeshRenderer = true)
+    public void UpdateMeshToDrawChunk(bool enableMeshRenderer = true)
     {
-        meshFilter.mesh = ChunkMeshGenerator.GetMeshOf(this, chunkData);
+        if (thread != null && thread.IsAlive)
+            Debug.LogWarning("The thread is alive and shouldn't to execute UpdateMeshToDrawChunk");
+        
+        thread = new Thread(() => ChunkMeshGenerator.PopulateMeshDataToDrawChunk(this, meshData, chunkData));
+        thread.Start();
+    }
+
+    public void DrawChunk()
+    {
+        meshFilter.mesh = ChunkMeshGenerator.GetMeshFrom(meshData);
         meshRenderer.enabled = true;
     }
 
