@@ -6,8 +6,13 @@ public class MeshBuiltToColliders : ChunkEvolution
 {
     protected override State stateToEvolveTo => State.Colliders;
     
-    protected override void PerformEvolution(Chunk chunk)
+    protected override bool EvolutionWithMultithreading(Chunk chunk)
     {
+        return true;
+    }
 
+    protected override bool EvolutionAtMainThread(Chunk chunk)
+    {
+        return false;
     }
 }

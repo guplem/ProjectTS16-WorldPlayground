@@ -9,12 +9,15 @@ public class ChunkManager
     public HashSet<Chunk> chunks = new HashSet<Chunk>();
     public Chunk[,] chunksArray { get; private set; }
     private GameObject chunkPrefab;
+    private Dictionary<Chunk, ChunkEvolution> assistedEvolutions = new Dictionary<Chunk, ChunkEvolution>();
+//    private SortedList<Chunk, ChunkEvolution> assistedEvolutions = new SortedList<Chunk, ChunkEvolution>();
 
     public ChunkManager(GameObject chunkPrefab)
     {
         this.chunkPrefab = chunkPrefab;
     }
 
+    #region Chunk Restructuration 
     public void RestructureChunks()
     {
         if (UpdateChunksPositions())
@@ -24,7 +27,7 @@ public class ChunkManager
         }
     }
 
-    // Returns true if new chunks have been generated
+    // Returns true if new chunks have been generated/chunks have been moved
     private bool UpdateChunksPositions()
     {
         // Get the positions that should have chunks at the moment
@@ -132,4 +135,39 @@ public class ChunkManager
         }
     }
     
+    #endregion
+
+    #region Assisted Evolution
+
+    public void AddAssistedEvolution(Chunk chunk, ChunkEvolution evolution)
+    {
+        lock (assistedEvolutions)
+        {
+            assistedEvolutions.Add(chunk, evolution);
+        }
+        
+    }
+    
+    public void AssistChunkEvolution()
+    {
+        lock (assistedEvolutions)
+        {
+            List<Chunk> evolutionsToRemove = new List<Chunk>();
+
+            foreach (KeyValuePair<Chunk, ChunkEvolution> assistedEvolution in assistedEvolutions)
+            {
+                assistedEvolution.Value.EvolveAtMainThread(assistedEvolution.Key);
+                evolutionsToRemove.Add(assistedEvolution.Key);                
+            }
+
+            foreach (var toRemove in evolutionsToRemove)
+            {
+                assistedEvolutions.Remove(toRemove);
+            }
+        }
+    }
+
+    #endregion
+    
+
 }

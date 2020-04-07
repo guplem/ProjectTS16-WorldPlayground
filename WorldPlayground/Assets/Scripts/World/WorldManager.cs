@@ -95,6 +95,11 @@ public class WorldManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        chunkManager.AssistChunkEvolution();
+    }
+
     /*private void Update()
     {
         // Start the calculus of a mesh each frame

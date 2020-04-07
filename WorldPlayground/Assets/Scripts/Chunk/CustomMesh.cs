@@ -34,12 +34,12 @@ public class CustomMesh
         meshRenderer.enabled = true;
     }
     
-    public void SetMesh()
+    public void UpdateMesh()
     {
-        meshFilter.mesh = GetMesh();
+        meshFilter.mesh = GenerateMesh();
     }
 
-    private Mesh GetMesh()
+    private Mesh GenerateMesh()
     {
         Mesh mesh = new Mesh
         {

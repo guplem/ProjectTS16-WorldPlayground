@@ -6,8 +6,13 @@ public class StructuresToNeighboursStructures : ChunkEvolution
 {
     protected override State stateToEvolveTo => State.NeighboursStructures;
     
-    protected override void PerformEvolution(Chunk chunk)
+    protected override bool EvolutionWithMultithreading(Chunk chunk)
     {
-        
+        return true;
+    }
+
+    protected override bool EvolutionAtMainThread(Chunk chunk)
+    {
+        return false;
     }
 }

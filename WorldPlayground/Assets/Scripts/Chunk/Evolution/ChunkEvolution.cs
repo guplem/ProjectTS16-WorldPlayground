@@ -20,12 +20,30 @@ public abstract class ChunkEvolution
 
     protected abstract State stateToEvolveTo { get; }
 
-    public void Evolve(Chunk chunk)
+    public void EvolveWithMultithreading(Chunk chunk)
     {
-        PerformEvolution(chunk);
-        chunk.currentState = stateToEvolveTo;
-        chunk.ContinueEvolving();
+        if (EvolutionWithMultithreading(chunk))
+            CompleteEvolution(chunk);
+    }
+    
+    public void EvolveAtMainThread(Chunk chunk)
+    {
+        if (EvolutionAtMainThread(chunk))
+            CompleteEvolution(chunk);
+        else
+            Debug.LogWarning("Evolution at main thread not completed at " + chunk.gameObject.name, chunk.gameObject);
     }
 
-    protected abstract void PerformEvolution(Chunk chunk);
+    private void CompleteEvolution(Chunk chunk)
+    {
+        chunk.currentState = stateToEvolveTo;
+        Chunk.ContinueEvolving(chunk);
+    }
+
+    // Must return true if the evolution is completed. False if the evolutions needs from assisted evolution
+    protected abstract bool EvolutionWithMultithreading(Chunk chunk);
+    
+    // Must return true if the evolution is completed. False if the evolution shouldn't be assisted
+    protected abstract bool EvolutionAtMainThread(Chunk chunk);
+    
 }
