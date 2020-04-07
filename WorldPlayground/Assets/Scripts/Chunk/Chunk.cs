@@ -8,28 +8,52 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class Chunk : MonoBehaviour
 {
-    [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private MeshRenderer meshRenderer;
-    
     public static readonly Vector2Int size = new Vector2Int(10,100); // XZ, Y     //    16, 256 // 10, 128
     
+    [SerializeField] private MeshFilter meshFilter;
+    [SerializeField] private MeshRenderer meshRenderer;
+    internal CustomMesh mesh { get; private set; }
+
     public Vector2Int position { get; private set; }
     public Vector2Int arrayPos;
 
-    private byte[,,] chunkData = new byte[size.x,size.y,size.x];// { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
-    private MeshData meshData = new MeshData();
+    internal byte[,,] chunkData = new byte[size.x,size.y,size.x];// { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
 
+    //private bool isActive = false;
+    private static readonly int mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
     private Thread thread;
+    
+    public ChunkEvolution.State currentState { get; set; }
+    public ChunkEvolution.State targetState { get; set; }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.white;
-        Gizmos.DrawWireCube(transform.position+new Vector3(size.x-1, size.y-1, size.x-1)/2, new Vector3(size.x, size.y, size.x));
-        //Gizmos.DrawWireCube(transform.position, new Vector3(size.x, 0, size.x));
+        Vector3 bottomCenter = transform.position + new Vector3(size.x - 1, size.y - 1, size.x - 1) / 2;
+        
+        switch (currentState) {
+            case ChunkEvolution.State.Empty: Gizmos.color =  new Color(0.4f, 0.4f, 0.4f, 0.9f); break;
+            case ChunkEvolution.State.Terrain: Gizmos.color = Color.red; break;
+            case ChunkEvolution.State.Structures: Gizmos.color = new Color(255/255f, 140/255f, 0/255f); break;
+            case ChunkEvolution.State.NeighboursStructures: Gizmos.color = Color.yellow; break;
+            case ChunkEvolution.State.LoadedModifications: Gizmos.color = Color.green; break;
+            case ChunkEvolution.State.MeshData: Gizmos.color = Color.cyan; break;
+            case ChunkEvolution.State.MeshBuilt: Gizmos.color = Color.blue; break;
+            case ChunkEvolution.State.Colliders: Gizmos.color = Color.magenta; break;
+            case ChunkEvolution.State.Active: Gizmos.color = Color.white; break;
+        }
+        //Gizmos.DrawWireCube(center, new Vector3(size.x, size.y, size.x));
+        Gizmos.DrawWireCube(bottomCenter+Vector3.up*size.y, new Vector3(size.x-0.5f, 0, size.x-0.5f));
+
+        if (currentState != targetState)
+        {
+            if (currentState > targetState)
+                Gizmos.color = Color.yellow;
+            else if (currentState < targetState)
+                Gizmos.color = Color.red;
+            Gizmos.DrawSphere(bottomCenter+Vector3.up*size.y, 2);
+        }
     }
 
-    
-    
 // ==================== UTILITY METHODS ==================== //
 
     public Vector3 GetWorldPositionFromRelativePosition(Vector3Int vector3Int)
@@ -43,39 +67,38 @@ public class Chunk : MonoBehaviour
         if (relativePositionToTheChunk.y < 0) return null;
 
         if (relativePositionToTheChunk.x >= size.x) {
-            if (WorldManager.Instance.chunksArray.GetLength(0) > arrayPos.x+1) {
-                if (WorldManager.Instance.chunksArray[arrayPos.x+1, arrayPos.y] != null){
+            if (WorldManager.Instance.chunkManager.chunksArray.GetLength(0) > arrayPos.x+1) {
+                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x+1, arrayPos.y] != null){
                     relativePositionToTheChunk.x -= size.x;
-                    return WorldManager.Instance.chunksArray[arrayPos.x+1, arrayPos.y].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x+1, arrayPos.y].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
         }
         if (relativePositionToTheChunk.z >= size.x) {
-            if (WorldManager.Instance.chunksArray.GetLength(1) > arrayPos.y+1) {
-                if (WorldManager.Instance.chunksArray[arrayPos.x, arrayPos.y+1] != null){
+            if (WorldManager.Instance.chunkManager.chunksArray.GetLength(1) > arrayPos.y+1) {
+                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y+1] != null){
                     relativePositionToTheChunk.z -= size.x;
-                    return WorldManager.Instance.chunksArray[arrayPos.x, arrayPos.y+1].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y+1].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
         }
-
-
+        
         if (relativePositionToTheChunk.x < 0) {
             if (arrayPos.x - 1 >= 0) {
-                if (WorldManager.Instance.chunksArray[arrayPos.x-1, arrayPos.y] != null){
+                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x-1, arrayPos.y] != null){
                     relativePositionToTheChunk.x += size.x;
-                    return WorldManager.Instance.chunksArray[arrayPos.x-1, arrayPos.y] .GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x-1, arrayPos.y] .GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
         }
         if (relativePositionToTheChunk.z < 0) {
             if (arrayPos.y - 1 >= 0) {
-                if (WorldManager.Instance.chunksArray[arrayPos.x, arrayPos.y-1] != null){
+                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y-1] != null){
                     relativePositionToTheChunk.z += size.x;
-                    return WorldManager.Instance.chunksArray[arrayPos.x, arrayPos.y-1].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y-1].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
@@ -83,36 +106,27 @@ public class Chunk : MonoBehaviour
 
         return CubesManager.Instance.GetCube(chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z]);
     }
-    
-    
-    
-// ==================== SETUP ==================== //
 
-    public void SetPosition(Vector2Int position)
+// ==================== WORKING METHODS ==================== //
+
+    public void SetupAt(Vector2Int position)
     {
-        if (this.position == position)
-            return;
-        
-        
+        if (this.position == position && mesh != null) return;
+        if (mesh == null) mesh = new CustomMesh(meshFilter, meshRenderer);
+
         transform.position = new Vector3(position.x, 0, position.y);
         this.position = position;
 
-        // Stop the threads
+        //isActive = false;
         thread?.Abort();
 
-        // Reset the chunk
-        lock (WorldManager.Instance.chunksToDrawSortedByDistance)
-            WorldManager.Instance.chunksToDrawSortedByDistance.Remove(this);
-        lock (WorldManager.Instance.notDrawnChunksWithDataSortedByDistance)
-            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Remove(this);
-        
-        DisableMeshRenderer();
-        ClearChunkData();
+        currentState = 0;
+        targetState = 0;
     }
 
     
     
-    public void GenerateChunkData()
+    /*public void GenerateChunkData()
     {
         if (thread != null && thread.IsAlive)
             Debug.LogWarning("The thread is alive and shouldn't to execute GenerateChunkData");
@@ -121,47 +135,74 @@ public class Chunk : MonoBehaviour
         thread.Start();
     }
 
-    private void ThreadedChunkDataGenerator()
-    {
-        for (int y = 0; y < size.y; y++)
-            for (int x = 0; x < size.x; x++)
-                for (int z = 0; z < size.x; z++)
-                    chunkData[x, y, z] = WorldGenerator.Instance.GetCube(GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
-        
-        lock (WorldManager.Instance.notDrawnChunksWithDataSortedByDistance)
-        {
-            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Add(this);
-            WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Sort((c1, c2) => (int) (Vector2Int.Distance(c1.position, WorldManager.Instance.centralChunkPosition) - Vector2Int.Distance(c2.position, WorldManager.Instance.centralChunkPosition)));
-        }
-    }
-
-    private void ClearChunkData()
-    {
-        chunkData = new byte[size.x,size.y,size.x];
-    }
-
-    
-    
-    public void DisableMeshRenderer()
-    {
-        meshRenderer.enabled = false;
-    }
-    
     public void UpdateMeshToDrawChunk(bool enableMeshRenderer = true)
     {
         if (thread != null && thread.IsAlive)
             Debug.LogWarning("The thread is alive and shouldn't to execute UpdateMeshToDrawChunk");
         
-        thread = new Thread(() => ChunkMeshGenerator.PopulateMeshDataToDrawChunk(this, meshData, chunkData));
+        thread = new Thread(() => ChunkMeshGenerator.PopulateMeshDataToDrawChunk(this, mesh, chunkData));
         thread.Start();
     }
 
     public void DrawChunk()
     {
-        meshFilter.mesh = ChunkMeshGenerator.GetMeshFrom(meshData);
+        meshFilter.mesh = ChunkMeshGenerator.GetMeshFrom(mesh);
         meshRenderer.enabled = true;
+    }*/
+
+    public void EvolveToState(ChunkEvolution.State desiredState)
+    {
+        if (targetState == desiredState) return;
+        targetState = desiredState;
+        ContinueEvolving();
     }
 
-    
-    
+    public void ContinueEvolving()
+    {
+        if (targetState == currentState) return;
+        
+        // If it is not in the main thread (so the thread is alive and this is being executed from the chunk thread itself)
+        /*if (System.Threading.Thread.CurrentThread.ManagedThreadId != mainThreadId)
+            Evolve();
+        else
+            thread = new Thread(new ThreadStart(Evolve)); // thread = new Thread(() => Chunk.Evolve(this));*/
+        Evolve();
+    }
+
+    private void Evolve()
+    {
+        if (targetState == currentState) return;
+
+        if (targetState > currentState)
+        {
+            // If generating chunk
+            switch (currentState) {
+                case ChunkEvolution.State.Empty: new EmptyToTerrain().Evolve(this); break;
+                case ChunkEvolution.State.Terrain: new TerrainToStructures().Evolve(this); break;
+                case ChunkEvolution.State.Structures: new StructuresToNeighboursStructures().Evolve(this); break;
+                case ChunkEvolution.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications().Evolve(this); break;
+                case ChunkEvolution.State.LoadedModifications: new LoadedModificationsToMeshData().Evolve(this); break;
+                case ChunkEvolution.State.MeshData: new MeshDataToMeshBuilt().Evolve(this); break;
+                case ChunkEvolution.State.MeshBuilt: new MeshBuiltToColliders().Evolve(this); break;
+                case ChunkEvolution.State.Colliders: new CollidersToActive().Evolve(this); break;
+                case ChunkEvolution.State.Active: break; // Shouldn't be reached
+            }
+        }
+        else 
+        {
+            // If deconstructing the chunk
+            switch (currentState) {
+                case ChunkEvolution.State.Empty: break; // Shouldn't be reached
+                case ChunkEvolution.State.Terrain: break; // No further evolution is needed
+                case ChunkEvolution.State.Structures: break; // No further evolution is needed
+                case ChunkEvolution.State.NeighboursStructures: break; // No further evolution is needed
+                case ChunkEvolution.State.LoadedModifications: break; // No further evolution is needed
+                case ChunkEvolution.State.MeshData: currentState = ChunkEvolution.State.LoadedModifications; ContinueEvolving(); break;
+                case ChunkEvolution.State.MeshBuilt: currentState = ChunkEvolution.State.MeshData; ContinueEvolving(); break;
+                case ChunkEvolution.State.Colliders: currentState = ChunkEvolution.State.MeshBuilt; ContinueEvolving(); break;
+                case ChunkEvolution.State.Active: currentState = ChunkEvolution.State.Colliders; ContinueEvolving(); break;
+            }
+        }
+        
+    }
 }

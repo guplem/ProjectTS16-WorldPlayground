@@ -12,20 +12,17 @@ public class WorldManager : MonoBehaviour
 
     [Space]
     [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
-    [SerializeField] private float timeBetweenGenerationOfChunks = 1f;
+    [SerializeField] private float timeBetweenChunkUpdates = 1f;
     [Space]
     [Tooltip("Max distance of the chunks generated at that moment.")]
-    [SerializeField] private int radiusOfGeneratedChunks = 10;
-    [SerializeField] private int radiusOfDrawnChunks = 5;
+    [SerializeField] public int radiusOfGeneratedChunks = 10;
 
     public Vector2Int centralChunkPosition { get; private set; }
 
-    private ChunkGenerator chunkGenerator;
+    public ChunkManager chunkManager;
     
-    private HashSet<Chunk> chunks = new HashSet<Chunk>();
-    public Chunk[,] chunksArray { get; private set; }
-    public List<Chunk> chunksToDrawSortedByDistance = new List<Chunk>();
-    public List<Chunk> notDrawnChunksWithDataSortedByDistance = new List<Chunk>();
+    //public List<Chunk> chunksToDrawSortedByDistance = new List<Chunk>();
+    //public List<Chunk> notDrawnChunksWithDataSortedByDistance = new List<Chunk>();
 
     public static WorldManager Instance { get; private set; }
     
@@ -46,7 +43,7 @@ public class WorldManager : MonoBehaviour
 
     private void Start()
     {
-        chunkGenerator = new ChunkGenerator();
+        chunkManager = new ChunkManager(chunkPrefab);
         StartCoroutine(nameof(UpdateChunks));
     }
     
@@ -72,7 +69,7 @@ public class WorldManager : MonoBehaviour
         Vector2Int chunkPos = PositionToChunkPosition(position);
         int x = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.x-chunkPos.x))/Chunk.size.x;
         int y = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.y-chunkPos.y))/Chunk.size.x;
-        return chunksArray[x, y];
+        return chunkManager.chunksArray[x, y];
     }
 
 
@@ -85,16 +82,28 @@ public class WorldManager : MonoBehaviour
         centralChunkPosition = newCentralPos;
         return retValue;
     }
+    
+    private IEnumerator UpdateChunks() {
+        while (true)
+        {
+            if (UpdateCentralChunkPosition() || chunkManager.chunks.Count == 0)
+                chunkManager.RestructureChunks();
+            //if (chunkManager.UpdateChunkPositions(chunks, chunkPrefab, centralChunkPosition, radiusOfGeneratedChunks))
+            //    UpdateChunksArray();
 
-    private void Update()
+            yield return new WaitForSeconds(timeBetweenChunkUpdates);
+        }
+    }
+
+    /*private void Update()
     {
         // Start the calculus of a mesh each frame
         CalculateMeshOfTheClosestChunkWithData();
         // Draw one each frame
         DrawTheClosesAvailableChunk();
-    }
+    }*/
 
-    private void DrawTheClosesAvailableChunk()
+    /*private void DrawTheClosesAvailableChunk()
     {
         lock (chunksToDrawSortedByDistance)
         {
@@ -106,9 +115,9 @@ public class WorldManager : MonoBehaviour
             chunksToDrawSortedByDistance.Remove(chunkToDraw);
         }
 
-    }
+    }*/
     
-    private void CalculateMeshOfTheClosestChunkWithData()
+    /*private void CalculateMeshOfTheClosestChunkWithData()
     {
         lock (notDrawnChunksWithDataSortedByDistance)
         {
@@ -121,30 +130,11 @@ public class WorldManager : MonoBehaviour
             chunkToDraw.UpdateMeshToDrawChunk();
             notDrawnChunksWithDataSortedByDistance.Remove(chunkToDraw);
         }
-    }
+    }*/
 
-    private IEnumerator UpdateChunks() {
-        while (true)
-        {
-            if (UpdateCentralChunkPosition() || chunks.Count == 0)
-                if (chunkGenerator.GenerateChunks(chunks, chunkPrefab, centralChunkPosition, radiusOfGeneratedChunks))
-                    UpdateChunksArray();
 
-            yield return new WaitForSeconds(timeBetweenGenerationOfChunks);
-        }
-    }
 
-    private void UpdateChunksArray()
-    {
-        chunksArray = new Chunk[radiusOfGeneratedChunks*2+1, radiusOfGeneratedChunks*2+1];
-        foreach (var chunk in chunks)
-        {
-            int x = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.x-chunk.position.x))/Chunk.size.x;
-            int y = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.y-chunk.position.y))/Chunk.size.x;
-            chunk.arrayPos = new Vector2Int(x, y);
-            chunksArray[x, y] = chunk;
-        }
-    }
+
 
 
 

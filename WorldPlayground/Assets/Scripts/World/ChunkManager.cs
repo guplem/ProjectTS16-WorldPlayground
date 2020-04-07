@@ -1,31 +1,50 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ChunkGenerator
+public class ChunkManager
 {
+    public HashSet<Chunk> chunks = new HashSet<Chunk>();
+    public Chunk[,] chunksArray { get; private set; }
+    private GameObject chunkPrefab;
+
+    public ChunkManager(GameObject chunkPrefab)
+    {
+        this.chunkPrefab = chunkPrefab;
+    }
+
+    public void RestructureChunks()
+    {
+        if (UpdateChunksPositions())
+        {
+            UpdateChunksArray();
+            UpdateObjectiveStatesOfChunks();
+        }
+    }
+
     // Returns true if new chunks have been generated
-    public bool GenerateChunks(HashSet<Chunk> chunks, GameObject chunkPrefab, Vector2Int centralChunkPosition, int radiusGenerationChunks)
+    private bool UpdateChunksPositions()
     {
         // Get the positions that should have chunks at the moment
-        HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(centralChunkPosition, radiusGenerationChunks);
+        HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(WorldManager.Instance.centralChunkPosition, WorldManager.Instance.radiusOfGeneratedChunks);
         
-        // Get chunks that shouldn't be generated now as they are (need to be moved)
+        // Get current chunks that should  to be moved from position
         Chunk[] chunksToRegenerate = GetChunksWithPositionNotIn(positionsWhereAChunkMustExist, chunks).ToArray();
-        // Remove (from the list) the chunks that shouldn't exist/be generated at the moment
+
+        // Get the positions with missing chunks - Look where new chunks must generate
+            //// (To do so, first Remove (from the list) the chunks that shouldn't exist/be generated at the moment)
         foreach (Chunk chunkToRegenerate in chunksToRegenerate)
             chunks.Remove(chunkToRegenerate);
-
-        // Look where new chunks must generate
         HashSet<Vector2Int> positionsOfCurrentChunks = new HashSet<Vector2Int>();
         foreach (Chunk chunk in chunks)
             positionsOfCurrentChunks.Add(chunk.position);
-        HashSet<Vector2Int> positionsWhereAChunkMustGenerate = new HashSet<Vector2Int>(positionsWhereAChunkMustExist.Except(positionsOfCurrentChunks));
+        HashSet<Vector2Int> positionsWithMissingChunks = new HashSet<Vector2Int>(positionsWhereAChunkMustExist.Except(positionsOfCurrentChunks));
 
         // Generate the chunks in the new positions that should have one now
         int chunkToGenerateIndex = 0;
-        foreach (Vector2Int chunkToGeneratePosition in positionsWhereAChunkMustGenerate)
+        foreach (Vector2Int chunkToGeneratePosition in positionsWithMissingChunks)
         {
             Chunk newChunk;
 
@@ -36,13 +55,14 @@ public class ChunkGenerator
             else
             {
                 newChunk = MonoBehaviour.Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, WorldManager.Instance.transform).GetComponent<Chunk>();
+                
                 if (positionsOfCurrentChunks.Count > 0) // Means that it is not the first run (where is normal that new chunks are instantiated)
                     Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
             }
             
             newChunk.gameObject.name = "Chunk " + chunkToGeneratePosition.x + "_" + chunkToGeneratePosition.y;
-            newChunk.SetPosition(chunkToGeneratePosition);
-            newChunk.GenerateChunkData();
+            newChunk.SetupAt(chunkToGeneratePosition);
+            
             chunks.Add(newChunk);
             
             chunkToGenerateIndex++;
@@ -59,8 +79,6 @@ public class ChunkGenerator
 
         return chunkToGenerateIndex > 0;
     }
-    
-    
     
     private HashSet<Vector2Int> GetAllChunkPositionsInRadius(Vector2Int center, int radiusInChunks)
     {
@@ -85,4 +103,33 @@ public class ChunkGenerator
 
         return chunksWithPositionNotInCollection;
     }
+    
+    private void UpdateChunksArray()
+    {
+        chunksArray = new Chunk[WorldManager.Instance.radiusOfGeneratedChunks*2+1, WorldManager.Instance.radiusOfGeneratedChunks*2+1];
+        foreach (var chunk in chunks)
+        {
+            int x = ((WorldManager.Instance.radiusOfGeneratedChunks*Chunk.size.x)-(WorldManager.Instance.centralChunkPosition.x-chunk.position.x))/Chunk.size.x;
+            int y = ((WorldManager.Instance.radiusOfGeneratedChunks*Chunk.size.x)-(WorldManager.Instance.centralChunkPosition.y-chunk.position.y))/Chunk.size.x;
+            chunk.arrayPos = new Vector2Int(x, y);
+            chunksArray[x, y] = chunk;
+        }
+    }
+    
+    private void UpdateObjectiveStatesOfChunks()
+    {
+        int totalQuantityOfStates = Enum.GetNames(typeof(ChunkEvolution.State)).Length;
+        
+        foreach (Chunk chunk in chunks)
+        {
+            float distance = Vector2Int.Distance(chunk.position, WorldManager.Instance.centralChunkPosition)/Chunk.size.x;
+            int desiredState =
+                Mathf.Clamp(
+                    ((int) (totalQuantityOfStates - totalQuantityOfStates /
+                            (float) WorldManager.Instance.radiusOfGeneratedChunks * distance)), 0,
+                    totalQuantityOfStates - 1);
+            chunk.EvolveToState((ChunkEvolution.State) desiredState);
+        }
+    }
+    
 }

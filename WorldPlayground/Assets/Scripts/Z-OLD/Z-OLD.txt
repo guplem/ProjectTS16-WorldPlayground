@@ -47,3 +47,10 @@ Stopwatch stopwatch = Stopwatch.StartNew();
 // Do some shit
 
 stopwatch.Stop(); Debug.Log("Stopwatch stop. Time = " + stopwatch.ElapsedMilliseconds + "ms");
+
+
+
+
+WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Add(this);
+// Sorting a list by distance
+WorldManager.Instance.notDrawnChunksWithDataSortedByDistance.Sort((c1, c2) => (int) (Vector2Int.Distance(c1.position, WorldManager.Instance.centralChunkPosition) - Vector2Int.Distance(c2.position, WorldManager.Instance.centralChunkPosition)));
