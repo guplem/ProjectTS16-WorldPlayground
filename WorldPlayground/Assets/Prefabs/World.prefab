@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8091498862916658087}
   - component: {fileID: 5091343261486733132}
   - component: {fileID: 5091343261486733136}
+  - component: {fileID: 1375945945}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -54,14 +55,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61efab8e8e83f734b88b2a5d52d8d4d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadingCenter: {fileID: 0}
-  chunkPrefab: {fileID: 1116597137998671553, guid: 07f3cbeef037fc1408dd800a68a74ff8,
-    type: 3}
-  timeBetweenGenerationOfChunks: 1
-  radiusOfGeneratedChunks: 15
-  radiusOfDrawnChunks: 5
-  chunksToDrawSortedByDistance: []
-  notDrawnChunksWithDataSortedByDistance: []
 --- !u!114 &5091343261486733132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,3 +92,20 @@ MonoBehaviour:
   bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
   fillingCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
   surfaceCube: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}
+--- !u!114 &1375945945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8347800180876523974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba88e728c473bcc4d8a885a2ae9e6e89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  loadingCenter: {fileID: 0}
+  chunkPrefab: {fileID: 1116597137998671553, guid: 07f3cbeef037fc1408dd800a68a74ff8,
+    type: 3}
+  timeBetweenChunkUpdates: 1
+  radiusOfGeneratedChunks: 32

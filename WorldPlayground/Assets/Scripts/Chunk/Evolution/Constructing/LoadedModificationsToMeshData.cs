@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LoadedModificationsToMeshData : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.MeshData;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.MeshData;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {

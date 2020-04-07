@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CollidersToActive : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.Active;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.Active;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {

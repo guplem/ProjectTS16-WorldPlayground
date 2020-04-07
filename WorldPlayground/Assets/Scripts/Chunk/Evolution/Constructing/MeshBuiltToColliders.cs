@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MeshBuiltToColliders : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.Colliders;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.Colliders;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {

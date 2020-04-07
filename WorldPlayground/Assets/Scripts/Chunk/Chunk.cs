@@ -21,25 +21,32 @@ public class Chunk : MonoBehaviour, IComparable
 
     //private bool isActive = false;
     private static readonly int mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-    private Thread thread;
-    
-    public ChunkEvolution.State currentState { get; set; }
-    public ChunkEvolution.State targetState { get; set; }
+    private Thread thread { get; set; }
+
+    private StateManager _state = new StateManager();
+    public StateManager.State currentState {
+        get { lock (_state) { return _state.currentState;  } }
+        set { lock (_state) { _state.currentState = value;  } }
+    }
+    public StateManager.State targetState {
+        get { lock (_state) { return _state.targetState;  } }
+        set { lock (_state) { _state.targetState = value;  } }
+    }
 
     private void OnDrawGizmos()
     {
         Vector3 bottomCenter = transform.position + new Vector3(size.x - 1, size.y - 1, size.x - 1) / 2;
         
         switch (currentState) {
-            case ChunkEvolution.State.Empty: Gizmos.color =  new Color(0.4f, 0.4f, 0.4f, 0.9f); break;
-            case ChunkEvolution.State.Terrain: Gizmos.color = Color.red; break;
-            case ChunkEvolution.State.Structures: Gizmos.color = new Color(255/255f, 140/255f, 0/255f); break;
-            case ChunkEvolution.State.NeighboursStructures: Gizmos.color = Color.yellow; break;
-            case ChunkEvolution.State.LoadedModifications: Gizmos.color = Color.green; break;
-            case ChunkEvolution.State.MeshData: Gizmos.color = Color.cyan; break;
-            case ChunkEvolution.State.MeshBuilt: Gizmos.color = Color.blue; break;
-            case ChunkEvolution.State.Colliders: Gizmos.color = Color.magenta; break;
-            case ChunkEvolution.State.Active: Gizmos.color = Color.white; break;
+            case StateManager.State.Empty: Gizmos.color =  new Color(0.4f, 0.4f, 0.4f, 0.9f); break;
+            case StateManager.State.Terrain: Gizmos.color = Color.red; break;
+            case StateManager.State.Structures: Gizmos.color = new Color(255/255f, 140/255f, 0/255f); break;
+            case StateManager.State.NeighboursStructures: Gizmos.color = Color.yellow; break;
+            case StateManager.State.LoadedModifications: Gizmos.color = Color.green; break;
+            case StateManager.State.MeshData: Gizmos.color = Color.cyan; break;
+            case StateManager.State.MeshBuilt: Gizmos.color = Color.blue; break;
+            case StateManager.State.Colliders: Gizmos.color = Color.magenta; break;
+            case StateManager.State.Active: Gizmos.color = Color.white; break;
         }
         //Gizmos.DrawWireCube(center, new Vector3(size.x, size.y, size.x));
         Gizmos.DrawWireCube(bottomCenter+Vector3.up*size.y, new Vector3(size.x-0.5f, 0, size.x-0.5f));
@@ -67,19 +74,19 @@ public class Chunk : MonoBehaviour, IComparable
         if (relativePositionToTheChunk.y < 0) return null;
 
         if (relativePositionToTheChunk.x >= size.x) {
-            if (WorldManager.Instance.chunkManager.chunksArray.GetLength(0) > arrayPos.x+1) {
-                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x+1, arrayPos.y] != null){
+            if (ChunkManager.Instance.chunksArray.GetLength(0) > arrayPos.x+1) {
+                if (ChunkManager.Instance.chunksArray[arrayPos.x+1, arrayPos.y] != null){
                     relativePositionToTheChunk.x -= size.x;
-                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x+1, arrayPos.y].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return ChunkManager.Instance.chunksArray[arrayPos.x+1, arrayPos.y].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
         }
         if (relativePositionToTheChunk.z >= size.x) {
-            if (WorldManager.Instance.chunkManager.chunksArray.GetLength(1) > arrayPos.y+1) {
-                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y+1] != null){
+            if (ChunkManager.Instance.chunksArray.GetLength(1) > arrayPos.y+1) {
+                if (ChunkManager.Instance.chunksArray[arrayPos.x, arrayPos.y+1] != null){
                     relativePositionToTheChunk.z -= size.x;
-                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y+1].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return ChunkManager.Instance.chunksArray[arrayPos.x, arrayPos.y+1].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
@@ -87,18 +94,18 @@ public class Chunk : MonoBehaviour, IComparable
         
         if (relativePositionToTheChunk.x < 0) {
             if (arrayPos.x - 1 >= 0) {
-                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x-1, arrayPos.y] != null){
+                if (ChunkManager.Instance.chunksArray[arrayPos.x-1, arrayPos.y] != null){
                     relativePositionToTheChunk.x += size.x;
-                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x-1, arrayPos.y] .GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return ChunkManager.Instance.chunksArray[arrayPos.x-1, arrayPos.y] .GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
         }
         if (relativePositionToTheChunk.z < 0) {
             if (arrayPos.y - 1 >= 0) {
-                if (WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y-1] != null){
+                if (ChunkManager.Instance.chunksArray[arrayPos.x, arrayPos.y-1] != null){
                     relativePositionToTheChunk.z += size.x;
-                    return WorldManager.Instance.chunkManager.chunksArray[arrayPos.x, arrayPos.y-1].GetCubeFromRelativePosition(relativePositionToTheChunk);
+                    return ChunkManager.Instance.chunksArray[arrayPos.x, arrayPos.y-1].GetCubeFromRelativePosition(relativePositionToTheChunk);
                 }
             }
             return null;
@@ -118,90 +125,70 @@ public class Chunk : MonoBehaviour, IComparable
         this.position = position;
 
         //isActive = false;
-        thread?.Abort();
+        //thread?.Abort();
 
         currentState = 0;
         targetState = 0;
     }
 
-    
-    
-    /*public void GenerateChunkData()
-    {
-        if (thread != null && thread.IsAlive)
-            Debug.LogWarning("The thread is alive and shouldn't to execute GenerateChunkData");
-        
-        thread = new Thread(new ThreadStart(ThreadedChunkDataGenerator));
-        thread.Start();
-    }
-
-    public void UpdateMeshToDrawChunk(bool enableMeshRenderer = true)
-    {
-        if (thread != null && thread.IsAlive)
-            Debug.LogWarning("The thread is alive and shouldn't to execute UpdateMeshToDrawChunk");
-        
-        thread = new Thread(() => ChunkMeshGenerator.PopulateMeshDataToDrawChunk(this, mesh, chunkData));
-        thread.Start();
-    }
-
-    public void DrawChunk()
-    {
-        meshFilter.mesh = ChunkMeshGenerator.GetMeshFrom(mesh);
-        meshRenderer.enabled = true;
-    }*/
-
-    public void EvolveToState(ChunkEvolution.State desiredState)
+    public void EvolveToState(StateManager.State desiredState)
     {
         if (targetState == desiredState) return;
         targetState = desiredState;
-        ContinueEvolving(this);
+        
+        if (!IsEvolving())
+            ContinueEvolving();
     }
 
-    
-    public static void ContinueEvolving(Chunk chunk)
+    private bool IsEvolving()
     {
-        if (chunk.targetState == chunk.currentState) return;
+        return ChunkManager.Instance.IsAssistingChunk(this) || (thread != null && thread.IsAlive);
+    }
+    
+    public void ContinueEvolving()
+    {
+        if (targetState == currentState) return;
         
         // If it is not in the main thread (so the thread is alive and this is being executed from the chunk thread itself)
-        if (System.Threading.Thread.CurrentThread.ManagedThreadId != mainThreadId) {
-            Evolve(chunk);
+        if (System.Threading.Thread.CurrentThread == thread) {
+            Evolve();
         } else {
-            chunk.thread = new Thread(() => Chunk.Evolve(chunk) ); //thread = new Thread(new ThreadStart(Evolve)); // thread = new Thread(() => Chunk.Evolve(this));
-            chunk.thread.Start();
+            //chunk.thread = new Thread(() => Chunk.Evolve(chunk) );
+            thread = new Thread(new ThreadStart(Evolve));
+            thread.Start();
         }
-            
     }
 
-    private static void Evolve(Chunk chunk)
+    private void Evolve()
     {
-        if (chunk.targetState == chunk.currentState) return;
+        if (targetState == currentState) return;
 
-        if (chunk.targetState > chunk.currentState)
+        if (targetState > currentState)
         {
             // If generating chunk
-            switch (chunk.currentState) {
-                case ChunkEvolution.State.Empty: new EmptyToTerrain().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.Terrain: new TerrainToStructures().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.Structures: new StructuresToNeighboursStructures().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.LoadedModifications: new LoadedModificationsToMeshData().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.MeshData: new MeshDataToMeshBuilt().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.MeshBuilt: new MeshBuiltToColliders().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.Colliders: new CollidersToActive().EvolveWithMultithreading(chunk); break;
-                case ChunkEvolution.State.Active: break; // Shouldn't be reached
+            switch (currentState) {
+                case StateManager.State.Empty: new EmptyToTerrain().EvolveWithMultithreading(this); break;
+                case StateManager.State.Terrain: new TerrainToStructures().EvolveWithMultithreading(this); break;
+                case StateManager.State.Structures: new StructuresToNeighboursStructures().EvolveWithMultithreading(this); break;
+                case StateManager.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications().EvolveWithMultithreading(this); break;
+                case StateManager.State.LoadedModifications: new LoadedModificationsToMeshData().EvolveWithMultithreading(this); break;
+                case StateManager.State.MeshData: new MeshDataToMeshBuilt().EvolveWithMultithreading(this); break;
+                case StateManager.State.MeshBuilt: new MeshBuiltToColliders().EvolveWithMultithreading(this); break;
+                case StateManager.State.Colliders: new CollidersToActive().EvolveWithMultithreading(this); break;
+                case StateManager.State.Active: break; // Shouldn't be reached
             }
         } else {
             // If deconstructing the chunk
-            switch (chunk.currentState) {
-                case ChunkEvolution.State.Empty: break; // Shouldn't be reached
-                case ChunkEvolution.State.Terrain: break; // No further evolution is needed
-                case ChunkEvolution.State.Structures: break; // No further evolution is needed
-                case ChunkEvolution.State.NeighboursStructures: break; // No further evolution is needed
-                case ChunkEvolution.State.LoadedModifications: break; // No further evolution is needed
-                case ChunkEvolution.State.MeshData: chunk.currentState = ChunkEvolution.State.LoadedModifications; ContinueEvolving(chunk); break;
-                case ChunkEvolution.State.MeshBuilt: chunk.currentState = ChunkEvolution.State.MeshData; ContinueEvolving(chunk); break;
-                case ChunkEvolution.State.Colliders: chunk.currentState = ChunkEvolution.State.MeshBuilt; ContinueEvolving(chunk); break;
-                case ChunkEvolution.State.Active: chunk.currentState = ChunkEvolution.State.Colliders; ContinueEvolving(chunk); break;
+            switch (currentState) {
+                case StateManager.State.Empty: break; // Shouldn't be reached
+                case StateManager.State.Terrain: break; // No further evolution is needed
+                case StateManager.State.Structures: break; // No further evolution is needed
+                case StateManager.State.NeighboursStructures: break; // No further evolution is needed
+                case StateManager.State.LoadedModifications: break; // No further evolution is needed
+                case StateManager.State.MeshData: currentState = StateManager.State.LoadedModifications; ContinueEvolving(); break;
+                case StateManager.State.MeshBuilt: currentState = StateManager.State.MeshData; ContinueEvolving(); break;
+                case StateManager.State.Colliders: currentState = StateManager.State.MeshBuilt; ContinueEvolving(); break;
+                case StateManager.State.Active: currentState = StateManager.State.Colliders; ContinueEvolving(); break;
             }
         }
     }
@@ -210,6 +197,6 @@ public class Chunk : MonoBehaviour, IComparable
     public int CompareTo(object obj)
     {
         Chunk chunkToCompareTo = (Chunk) obj;
-        return (int) (Vector2Int.Distance(this.position, WorldManager.Instance.centralChunkPosition) - Vector2Int.Distance(chunkToCompareTo.position, WorldManager.Instance.centralChunkPosition));
+        return (int) (Vector2Int.Distance(this.position, ChunkManager.Instance.centralChunkPosition) - Vector2Int.Distance(chunkToCompareTo.position, ChunkManager.Instance.centralChunkPosition));
     }
 }

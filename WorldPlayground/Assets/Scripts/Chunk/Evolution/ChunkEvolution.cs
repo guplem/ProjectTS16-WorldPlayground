@@ -5,20 +5,8 @@ using UnityEngine;
 
 public abstract class ChunkEvolution
 {
-    public enum State
-    {
-        Empty,
-        Terrain,
-        Structures,
-        NeighboursStructures,
-        LoadedModifications,
-        MeshData,
-        MeshBuilt,
-        Colliders,
-        Active
-    }
 
-    protected abstract State stateToEvolveTo { get; }
+    protected abstract StateManager.State stateToEvolveTo { get; }
 
     public void EvolveWithMultithreading(Chunk chunk)
     {
@@ -37,7 +25,7 @@ public abstract class ChunkEvolution
     private void CompleteEvolution(Chunk chunk)
     {
         chunk.currentState = stateToEvolveTo;
-        Chunk.ContinueEvolving(chunk);
+        chunk.ContinueEvolving();
     }
 
     // Must return true if the evolution is completed. False if the evolutions needs from assisted evolution

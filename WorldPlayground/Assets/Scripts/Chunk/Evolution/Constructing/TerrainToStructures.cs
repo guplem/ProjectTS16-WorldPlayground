@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TerrainToStructures : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.Structures;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.Structures;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {

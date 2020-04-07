@@ -1,37 +1,131 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
-public class ChunkManager
+public class ChunkManager : MonoBehaviour
 {
-    public HashSet<Chunk> chunks = new HashSet<Chunk>();
-    public Chunk[,] chunksArray { get; private set; }
-    private GameObject chunkPrefab;
-    private Dictionary<Chunk, ChunkEvolution> assistedEvolutions = new Dictionary<Chunk, ChunkEvolution>();
-//    private SortedList<Chunk, ChunkEvolution> assistedEvolutions = new SortedList<Chunk, ChunkEvolution>();
+    [Tooltip("The transform that will be the center of the 'game action'")]
+    [SerializeField] private Transform loadingCenter;
+    public Vector2Int centralChunkPosition { get; private set; }
+    [SerializeField] private GameObject chunkPrefab;
 
-    public ChunkManager(GameObject chunkPrefab)
+    [Space]
+    [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
+    [SerializeField] private float timeBetweenChunkUpdates = 1f;
+    [Space]
+    [Tooltip("Max distance of the chunks generated at that moment.")]
+    [SerializeField] public int radiusOfGeneratedChunks = 32;
+
+    public List<Chunk> chunks = new List<Chunk>();
+    public Chunk[,] chunksArray { get; private set; }
+    public bool revalidateChunks = false;
+    
+    private Dictionary<Chunk, ChunkEvolution> assistedEvolutions = new Dictionary<Chunk, ChunkEvolution>();
+    //private SortedList<Chunk, ChunkEvolution> assistedEvolutions = new SortedList<Chunk, ChunkEvolution>();
+
+    #region Setup
+
+    public static ChunkManager Instance { get; private set; }
+
+    private void Awake()
     {
-        this.chunkPrefab = chunkPrefab;
+        if (Instance != null)
+        {
+            Debug.LogWarning("Multiple ChunkManager exist. Destroying the last one registered.", gameObject);
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+    
+    private void Start()
+    {
+        StartCoroutine(nameof(UpdateChunks));
     }
 
-    #region Chunk Restructuration 
-    public void RestructureChunks()
+    #endregion
+
+    #region Utility
+
+    public Vector2Int PositionToChunkPosition(Vector3 position)
     {
-        if (UpdateChunksPositions())
+        return new Vector2Int(
+            Mathf.FloorToInt(position.x / Chunk.size.x) * Chunk.size.x,
+            Mathf.FloorToInt(position.z / Chunk.size.x) * Chunk.size.x);
+    }
+
+    public Chunk GetChunkOfPosition(Vector3 position)
+    {
+        Vector2Int chunkPos = PositionToChunkPosition(position);
+        int x = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.x-chunkPos.x))/Chunk.size.x;
+        int y = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.y-chunkPos.y))/Chunk.size.x;
+        return chunksArray[x, y];
+    }
+
+    #endregion
+
+    #region Iterative methods
+
+    private void Update()
+    {
+        AssistChunkEvolution();
+        
+        if (revalidateChunks)
         {
-            UpdateChunksArray();
-            UpdateObjectiveStatesOfChunks();
+            RestructureChunks(true);
+            revalidateChunks = false;
+        }
+    }
+    
+    private bool UpdateCentralChunkPosition() // Returns true if the position is updated
+    {
+        Vector2Int newCentralPos = PositionToChunkPosition(loadingCenter.position);
+        bool retValue = newCentralPos != centralChunkPosition;
+        centralChunkPosition = newCentralPos;
+        return retValue;
+    }
+    
+    private IEnumerator UpdateChunks() {
+        while (true)
+        {
+            if (UpdateCentralChunkPosition() || chunks.Count == 0)
+                RestructureChunks();
+
+            yield return new WaitForSeconds(timeBetweenChunkUpdates);
         }
     }
 
-    // Returns true if new chunks have been generated/chunks have been moved
-    private bool UpdateChunksPositions()
+
+
+    #endregion
+    
+    #region Chunk Restructuration
+
+    private Thread restructuringThread;
+    public void RestructureChunks(bool force = false)
+    {
+        if (UpdateChunksPositions() || force)
+        {
+            restructuringThread?.Abort();
+            
+            UpdateChunksArray();
+            
+            restructuringThread = new Thread(new ThreadStart(UpdateObjectiveStatesOfChunks));
+            restructuringThread.Start();
+        }
+    }
+    
+    private bool UpdateChunksPositions() // Returns true if new chunks have been generated/chunks have been moved
     {
         // Get the positions that should have chunks at the moment
-        HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(WorldManager.Instance.centralChunkPosition, WorldManager.Instance.radiusOfGeneratedChunks);
+        HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(centralChunkPosition, radiusOfGeneratedChunks);
         
         // Get current chunks that should  to be moved from position
         Chunk[] chunksToRegenerate = GetChunksWithPositionNotIn(positionsWhereAChunkMustExist, chunks).ToArray();
@@ -57,7 +151,7 @@ public class ChunkManager
             }
             else
             {
-                newChunk = MonoBehaviour.Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, WorldManager.Instance.transform).GetComponent<Chunk>();
+                newChunk = MonoBehaviour.Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, transform).GetComponent<Chunk>();
                 
                 if (positionsOfCurrentChunks.Count > 0) // Means that it is not the first run (where is normal that new chunks are instantiated)
                     Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
@@ -80,6 +174,9 @@ public class ChunkManager
         
         Debug.Log("Generation cycle completed. New chunks: " + chunkToGenerateIndex + ". Total number of chunks: " + chunks.Count);
 
+        if (chunkToGenerateIndex > 0)
+            chunks.Sort((c1, c2) => c1.CompareTo(c2));
+        
         return chunkToGenerateIndex > 0;
     }
     
@@ -96,7 +193,7 @@ public class ChunkManager
         return chunkCoords;
     }
     
-    private HashSet<Chunk> GetChunksWithPositionNotIn(HashSet<Vector2Int> positions, HashSet<Chunk> chunks)
+    private HashSet<Chunk> GetChunksWithPositionNotIn(HashSet<Vector2Int> positions, List<Chunk> chunks)
     {
         HashSet<Chunk> chunksWithPositionNotInCollection = new HashSet<Chunk>();
         
@@ -109,11 +206,11 @@ public class ChunkManager
     
     private void UpdateChunksArray()
     {
-        chunksArray = new Chunk[WorldManager.Instance.radiusOfGeneratedChunks*2+1, WorldManager.Instance.radiusOfGeneratedChunks*2+1];
-        foreach (var chunk in chunks)
+        chunksArray = new Chunk[radiusOfGeneratedChunks*2+1, radiusOfGeneratedChunks*2+1];
+        foreach (Chunk chunk in chunks)
         {
-            int x = ((WorldManager.Instance.radiusOfGeneratedChunks*Chunk.size.x)-(WorldManager.Instance.centralChunkPosition.x-chunk.position.x))/Chunk.size.x;
-            int y = ((WorldManager.Instance.radiusOfGeneratedChunks*Chunk.size.x)-(WorldManager.Instance.centralChunkPosition.y-chunk.position.y))/Chunk.size.x;
+            int x = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.x-chunk.position.x))/Chunk.size.x;
+            int y = ((radiusOfGeneratedChunks*Chunk.size.x)-(centralChunkPosition.y-chunk.position.y))/Chunk.size.x;
             chunk.arrayPos = new Vector2Int(x, y);
             chunksArray[x, y] = chunk;
         }
@@ -121,18 +218,22 @@ public class ChunkManager
     
     private void UpdateObjectiveStatesOfChunks()
     {
-        int totalQuantityOfStates = Enum.GetNames(typeof(ChunkEvolution.State)).Length;
-        
-        foreach (Chunk chunk in chunks)
+        try
         {
-            float distance = Vector2Int.Distance(chunk.position, WorldManager.Instance.centralChunkPosition)/Chunk.size.x;
-            int desiredState =
-                Mathf.Clamp(
-                    ((int) (totalQuantityOfStates - totalQuantityOfStates /
-                            (float) WorldManager.Instance.radiusOfGeneratedChunks * distance)), 0,
-                    totalQuantityOfStates - 1);
-            chunk.EvolveToState((ChunkEvolution.State) desiredState);
-        }
+            int totalQuantityOfStates = Enum.GetNames(typeof(StateManager.State)).Length;
+        
+            foreach (Chunk chunk in chunks)
+            {
+                float distance = Vector2Int.Distance(chunk.position, centralChunkPosition)/Chunk.size.x;
+                int desiredState =
+                    Mathf.Clamp(
+                        ((int) (totalQuantityOfStates - totalQuantityOfStates /
+                                (float) radiusOfGeneratedChunks * distance)), 0,
+                        totalQuantityOfStates - 1);
+                chunk.EvolveToState((StateManager.State) desiredState);
+            }
+        } catch (InvalidOperationException) { revalidateChunks = true; }
+
     }
     
     #endregion
@@ -152,22 +253,26 @@ public class ChunkManager
     {
         lock (assistedEvolutions)
         {
-            List<Chunk> evolutionsToRemove = new List<Chunk>();
-
-            foreach (KeyValuePair<Chunk, ChunkEvolution> assistedEvolution in assistedEvolutions)
+            List<Chunk> chunksToAssist = new List<Chunk>(assistedEvolutions.Keys);
+            foreach (Chunk chunkToAssist in chunksToAssist)
             {
-                assistedEvolution.Value.EvolveAtMainThread(assistedEvolution.Key);
-                evolutionsToRemove.Add(assistedEvolution.Key);                
+                ChunkEvolution evolution = assistedEvolutions[chunkToAssist];
+                assistedEvolutions.Remove(chunkToAssist);
+                evolution.EvolveAtMainThread(chunkToAssist);
             }
-
-            foreach (var toRemove in evolutionsToRemove)
-            {
-                assistedEvolutions.Remove(toRemove);
-            }
+        }
+    }
+    
+    public bool IsAssistingChunk(Chunk chunk)
+    {
+        lock (assistedEvolutions)
+        {
+            return assistedEvolutions.ContainsKey(chunk);
         }
     }
 
     #endregion
-    
+
+
 
 }

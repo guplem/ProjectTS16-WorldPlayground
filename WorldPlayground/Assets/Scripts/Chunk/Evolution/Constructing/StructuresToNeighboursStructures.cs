@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class StructuresToNeighboursStructures : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.NeighboursStructures;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.NeighboursStructures;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {

@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class MeshDataToMeshBuilt : ChunkEvolution
 {
-    protected override State stateToEvolveTo => State.MeshBuilt;
+    protected override StateManager.State stateToEvolveTo => StateManager.State.MeshBuilt;
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {
-        WorldManager.Instance.chunkManager.AddAssistedEvolution(chunk, this);
+        ChunkManager.Instance.AddAssistedEvolution(chunk, this);
         return false;
     }
 
