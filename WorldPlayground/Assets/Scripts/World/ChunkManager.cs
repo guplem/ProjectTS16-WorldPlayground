@@ -76,12 +76,6 @@ public class ChunkManager : MonoBehaviour
     private void Update()
     {
         AssistChunkEvolution();
-        
-        if (revalidateChunks)
-        {
-            RestructureChunks(true);
-            revalidateChunks = false;
-        }
     }
     
     private bool UpdateCentralChunkPosition() // Returns true if the position is updated
@@ -95,8 +89,11 @@ public class ChunkManager : MonoBehaviour
     private IEnumerator UpdateChunks() {
         while (true)
         {
-            if (UpdateCentralChunkPosition() || chunks.Count == 0)
+            if (UpdateCentralChunkPosition() || chunks.Count == 0 || revalidateChunks)
+            {
+                revalidateChunks = false;
                 RestructureChunks();
+            }
 
             yield return new WaitForSeconds(timeBetweenChunkUpdates);
         }
@@ -109,9 +106,9 @@ public class ChunkManager : MonoBehaviour
     #region Chunk Restructuration
 
     private Thread restructuringThread;
-    public void RestructureChunks(bool force = false)
+    public void RestructureChunks()
     {
-        if (UpdateChunksPositions() || force)
+        if (UpdateChunksPositions())
         {
             restructuringThread?.Abort();
             
@@ -124,20 +121,22 @@ public class ChunkManager : MonoBehaviour
     
     private bool UpdateChunksPositions() // Returns true if new chunks have been generated/chunks have been moved
     {
+        ////////Stopwatch stopwatch = Stopwatch.StartNew();
+        
         // Get the positions that should have chunks at the moment
         HashSet<Vector2Int> positionsWhereAChunkMustExist = GetAllChunkPositionsInRadius(centralChunkPosition, radiusOfGeneratedChunks);
+        ////////stopwatch.Stop(); Debug.Log("positionsWhereAChunkMustExist " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
         
-        // Get current chunks that should  to be moved from position
+        // Get current chunks that should to be moved from position
         Chunk[] chunksToRegenerate = GetChunksWithPositionNotIn(positionsWhereAChunkMustExist, chunks).ToArray();
+        ////////stopwatch.Stop(); Debug.Log("chunksToRegenerate " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
 
         // Get the positions with missing chunks - Look where new chunks must generate
-            //// (To do so, first Remove (from the list) the chunks that shouldn't exist/be generated at the moment)
-        foreach (Chunk chunkToRegenerate in chunksToRegenerate)
-            chunks.Remove(chunkToRegenerate);
         HashSet<Vector2Int> positionsOfCurrentChunks = new HashSet<Vector2Int>();
         foreach (Chunk chunk in chunks)
             positionsOfCurrentChunks.Add(chunk.position);
         HashSet<Vector2Int> positionsWithMissingChunks = new HashSet<Vector2Int>(positionsWhereAChunkMustExist.Except(positionsOfCurrentChunks));
+        ////////stopwatch.Stop(); Debug.Log("positionsWithMissingChunks " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
 
         // Generate the chunks in the new positions that should have one now
         int chunkToGenerateIndex = 0;
@@ -151,8 +150,8 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                newChunk = MonoBehaviour.Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, transform).GetComponent<Chunk>();
-                
+                newChunk = Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity, transform).GetComponent<Chunk>();
+                chunks.Add(newChunk);
                 if (positionsOfCurrentChunks.Count > 0) // Means that it is not the first run (where is normal that new chunks are instantiated)
                     Debug.LogWarning("Instantiating " + newChunk.gameObject.name + " because the current quantity of instantiated chunks is not enough.");
             }
@@ -160,10 +159,9 @@ public class ChunkManager : MonoBehaviour
             newChunk.gameObject.name = "Chunk " + chunkToGeneratePosition.x + "_" + chunkToGeneratePosition.y;
             newChunk.SetupAt(chunkToGeneratePosition);
             
-            chunks.Add(newChunk);
-            
             chunkToGenerateIndex++;
         }
+        ////////stopwatch.Stop(); Debug.Log("Generation " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
         
         //Destroy non-necessary chunks
         for (int c = chunkToGenerateIndex; c < chunksToRegenerate.Length; c++)
@@ -174,8 +172,11 @@ public class ChunkManager : MonoBehaviour
         
         Debug.Log("Generation cycle completed. New chunks: " + chunkToGenerateIndex + ". Total number of chunks: " + chunks.Count);
 
+        ////////stopwatch.Stop(); Debug.Log("Destruction " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
+        
         if (chunkToGenerateIndex > 0)
             chunks.Sort((c1, c2) => c1.CompareTo(c2));
+        ////////stopwatch.Stop(); Debug.Log("Sorting " + stopwatch.ElapsedMilliseconds); stopwatch.Restart();
         
         return chunkToGenerateIndex > 0;
     }
