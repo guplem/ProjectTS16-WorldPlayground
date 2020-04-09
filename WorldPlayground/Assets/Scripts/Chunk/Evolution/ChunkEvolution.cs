@@ -8,7 +8,7 @@ public abstract class ChunkEvolution
 
     protected abstract StateManager.State stateToEvolveTo { get; }
 
-    public void EvolveWithMultithreading(Chunk chunk)
+    public void EvolveTo(Chunk chunk)
     {
         if (EvolutionWithMultithreading(chunk))
             CompleteEvolution(chunk);
@@ -25,7 +25,7 @@ public abstract class ChunkEvolution
     private void CompleteEvolution(Chunk chunk)
     {
         chunk.currentState = stateToEvolveTo;
-        chunk.ContinueEvolving();
+        chunk.Evolve();
     }
 
     // Must return true if the evolution is completed. False if the evolutions needs from assisted evolution

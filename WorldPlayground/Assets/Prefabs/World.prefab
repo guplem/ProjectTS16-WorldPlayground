@@ -109,3 +109,5 @@ MonoBehaviour:
     type: 3}
   timeBetweenChunkUpdates: 1
   radiusOfGeneratedChunks: 32
+  chunks: []
+  revalidateChunks: 0

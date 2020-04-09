@@ -285,7 +285,7 @@ PrefabInstance:
       objectReference: {fileID: 317404523}
     - target: {fileID: 1375945945, guid: 61a096324958c9a469c03d85bc032953, type: 3}
       propertyPath: radiusOfGeneratedChunks
-      value: 100
+      value: 32
       objectReference: {fileID: 0}
     - target: {fileID: 8104386872639039257, guid: 61a096324958c9a469c03d85bc032953,
         type: 3}

@@ -9,7 +9,7 @@ public class MeshDataToMeshBuilt : ChunkEvolution
     
     protected override bool EvolutionWithMultithreading(Chunk chunk)
     {
-        ChunkManager.Instance.AddAssistedEvolution(chunk, this);
+        ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(chunk, this);
         return false;
     }
 
