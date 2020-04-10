@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -57,13 +58,21 @@ public class ChunkEvolver
 
     public void AddChunkToEvolve(Chunk chunk)
     {
-        lock (assistedEvolutions)
+        lock (threadedEvolutions)
         {
             threadedEvolutions.Add(chunk);
         }
+
+        CreateThreadToEvolve();
     }
-    
-    public void EvolveChunks()
+
+    private void CreateThreadToEvolve()
+    {
+        if (SoftwareManager.Instance.ShouldNewThreadsBeEnqueued())
+            ThreadPool.QueueUserWorkItem(EvolveChunks);
+    }
+
+    public void EvolveChunks(object stateInfo) 
     {
         int threadedEvolutionsCount;
         lock (threadedEvolutions)
@@ -71,19 +80,23 @@ public class ChunkEvolver
         
         while (threadedEvolutionsCount > 0)
         {
-            HashSet<Chunk> chunksToEvolve;
+            Chunk chunkToEvolve;
             lock (threadedEvolutions)
-                chunksToEvolve = new HashSet<Chunk>(threadedEvolutions);
+            {
+                chunkToEvolve = threadedEvolutions.RemoveFirst();
+                threadedEvolutionsCount = threadedEvolutions.Count;
+            }
 
-            foreach (Chunk chunkToEvolve in chunksToEvolve)
-                if (chunkToEvolve.Evolve())
-                    lock (threadedEvolutions)
-                    {
-                        threadedEvolutions.Remove(chunkToEvolve);
-                        threadedEvolutionsCount = threadedEvolutions.Count;
-                    }
+            if (!chunkToEvolve.Evolve())
+            {
+                lock (threadedEvolutions)
+                {
+                    threadedEvolutions.Add(chunkToEvolve);
+                    threadedEvolutionsCount = threadedEvolutions.Count;
+                }
+            }
             
-            Thread.Sleep(20);
+            Thread.Sleep(5);
         }
     }
     

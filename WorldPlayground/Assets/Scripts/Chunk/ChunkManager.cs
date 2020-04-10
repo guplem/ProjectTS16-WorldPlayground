@@ -113,7 +113,6 @@ public class ChunkManager : MonoBehaviour
     private void EvolveAllChunksToTheProperStateThreaded()
     {
         chunkConfigurator.UpdateObjectiveStatesOfChunks();
-        chunkEvolver.EvolveChunks();
     }
 
 
