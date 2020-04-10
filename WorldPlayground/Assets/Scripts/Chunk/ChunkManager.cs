@@ -13,7 +13,6 @@ public class ChunkManager : MonoBehaviour
     [SerializeField] private Transform loadingCenter;
     public Vector2Int centralChunkPosition { get; private set; }
     [SerializeField] internal GameObject chunkPrefab;
-
     [Space]
     [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
     [SerializeField] private float timeBetweenChunkUpdates = 1f;
@@ -22,14 +21,13 @@ public class ChunkManager : MonoBehaviour
     [SerializeField] public int radiusOfGeneratedChunks = 32;
 
     public List<Chunk> chunks = new List<Chunk>();
-    public Chunk[,] chunksArray { get; internal set; }
+    public Chunk[,] chunksArray = new Chunk[0,0];
+    
     public bool revalidateChunks = false;
 
     private ChunkConfigurator chunkConfigurator;
     internal ChunkEvolver chunkEvolver;
 
-    public Thread chunkThread;
-    
     #region Setup
 
     public static ChunkManager Instance { get; private set; }
@@ -44,8 +42,8 @@ public class ChunkManager : MonoBehaviour
         else
         {
             Instance = this;
-            chunkConfigurator = new ChunkConfigurator(this);
-            chunkEvolver = new ChunkEvolver(this);
+            chunkConfigurator = new ChunkConfigurator();
+            chunkEvolver = new ChunkEvolver();
         }
     }
     
@@ -80,16 +78,25 @@ public class ChunkManager : MonoBehaviour
     private void Update()
     {
         chunkEvolver.AssistChunkEvolution();
+        if (chunkConfigurator.waitingForUnityWorkToStart)
+        {
+            if (chunkConfigurator.waitingForUnityWorkToEnd)
+                Debug.LogWarning("Shouldn't be waiting to start if it is already executing (waitingForUnityWorkToEnd = true)");
+            
+            chunkConfigurator.UpdateWorldChunks();
+        }
+            
     }
 
     private IEnumerator UpdateChunks() {
         while (true)
         {
-            if (UpdateCentralChunkPosition() || chunks.Count == 0 || revalidateChunks)
-            {
-                revalidateChunks = false;
-                chunkConfigurator.RestructureChunks();
-            }
+            if (!chunkConfigurator.waitingForUnityWorkToEnd) // Avoid interrupting Unity Work
+                if (UpdateCentralChunkPosition() || chunks.Count == 0 || revalidateChunks)
+                {
+                    revalidateChunks = false;
+                    chunkConfigurator.RestructureChunks();
+                }
 
             yield return new WaitForSeconds(timeBetweenChunkUpdates);
         }
@@ -103,23 +110,6 @@ public class ChunkManager : MonoBehaviour
         return retValue;
     }
     
-    public void EvolveAllChunksToTheProperState()
-    {
-        chunkThread?.Abort();
-        chunkThread = new Thread(new ThreadStart(EvolveAllChunksToTheProperStateThreaded));
-        chunkThread.Start();
-    }
-    
-    private void EvolveAllChunksToTheProperStateThreaded()
-    {
-        chunkConfigurator.UpdateObjectiveStatesOfChunks();
-    }
-
-
     #endregion
-    
-
-
-
 
 }

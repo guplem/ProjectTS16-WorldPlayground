@@ -6,11 +6,13 @@ using UnityEngine;
 
 public class SoftwareManager : MonoBehaviour
 {
-    [SerializeField] private int realMaximumNumberOfThreads = Environment.ProcessorCount;
+    [SerializeField] private int realDesiredMaximumNumberOfThreads = Environment.ProcessorCount;
     [SerializeField] private int desiredMaximumNumberOfThreads = Environment.ProcessorCount/2;
     private int defaultMaximumNumberOfThreads;
     private int lowestAcceptableValueForMaximumNumberOfThreads = Environment.ProcessorCount;
     private int defaultMinimumNumberOfThreads;
+
+    public static int mainThreadId { get; private set; }
 
     public static SoftwareManager Instance { get; private set; }
 
@@ -25,13 +27,14 @@ public class SoftwareManager : MonoBehaviour
         {
             Instance = this;
             
+            mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             
             ThreadPool.GetMaxThreads(out defaultMaximumNumberOfThreads, out int _);
             ThreadPool.GetMinThreads(out defaultMinimumNumberOfThreads, out int _);
             
             
-            if (ThreadPool.SetMaxThreads(realMaximumNumberOfThreads, realMaximumNumberOfThreads))
-                Debug.Log("Set the maximum number of threads to " + realMaximumNumberOfThreads);
+            if (ThreadPool.SetMaxThreads(realDesiredMaximumNumberOfThreads, realDesiredMaximumNumberOfThreads))
+                Debug.Log("The maximum number of threads is set to " + realDesiredMaximumNumberOfThreads);
             else
                 Debug.LogWarning("Error setting maximum number of threads. The value can not be below " + lowestAcceptableValueForMaximumNumberOfThreads);
         }
@@ -42,18 +45,16 @@ public class SoftwareManager : MonoBehaviour
         ThreadPool.GetMinThreads(out int min, out int _);
         ThreadPool.GetMaxThreads(out int max, out int _);
         Debug.Log("MIN THREADS: " + min + ", MAX THREADS: " + max);
-        
-        StartCoroutine(nameof(ReportThreadCount));
     }
 
-    private IEnumerator ReportThreadCount()
+    /*private IEnumerator ReportThreadCount()
     {
         while (true)
         {
             Debug.Log("The current number of threads is " + GetCurrentNumberOfActiveThreads());
             yield return new WaitForSeconds(1f);
         }
-    }
+    }*/
 
     private int GetCurrentNumberOfActiveThreads()
     {

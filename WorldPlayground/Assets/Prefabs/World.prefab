@@ -109,7 +109,7 @@ MonoBehaviour:
   chunkPrefab: {fileID: 1116597137998671553, guid: 07f3cbeef037fc1408dd800a68a74ff8,
     type: 3}
   timeBetweenChunkUpdates: 1
-  radiusOfGeneratedChunks: 32
+  radiusOfGeneratedChunks: 50
   chunks: []
   revalidateChunks: 0
 --- !u!114 &931935318729533721
@@ -124,5 +124,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b16282164a5c8f54d9cc5096bc32cc87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realMaximumNumberOfThreads: 8
-  desiredMaximumNumberOfThreads: 2
+  realDesiredMaximumNumberOfThreads: 8
+  desiredMaximumNumberOfThreads: 4

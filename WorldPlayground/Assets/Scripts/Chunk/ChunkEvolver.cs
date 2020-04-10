@@ -8,13 +8,6 @@ public class ChunkEvolver
 {
     private Dictionary<Chunk, ChunkEvolution> assistedEvolutions = new Dictionary<Chunk, ChunkEvolution>();
     private HashSet<Chunk> threadedEvolutions = new HashSet<Chunk>();
-    //private SortedList<Chunk, ChunkEvolution> assistedEvolutions = new SortedList<Chunk, ChunkEvolution>();
-    
-    private ChunkManager chunkManager;
-    public ChunkEvolver(ChunkManager chunkManager)
-    {
-        this.chunkManager = chunkManager;
-    }
 
     #region Assisted Evolution
 
@@ -52,7 +45,6 @@ public class ChunkEvolver
     }
 
     #endregion
-
     
     #region Threaded Evolutions
 

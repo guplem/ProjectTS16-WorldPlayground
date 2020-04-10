@@ -19,7 +19,6 @@ public class Chunk : MonoBehaviour, IComparable
 
     internal byte[,,] chunkData = new byte[size.x,size.y,size.x]; // { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
     
-    //private static readonly int mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
     //private Thread thread { get; set; }
 
     private StateManager _state = new StateManager();
@@ -48,14 +47,14 @@ public class Chunk : MonoBehaviour, IComparable
             case StateManager.State.Active: Gizmos.color = Color.white; break;
         }
         //Gizmos.DrawWireCube(center, new Vector3(size.x, size.y, size.x));
-        Gizmos.DrawWireCube(bottomCenter+Vector3.up*size.y, new Vector3(size.x-0.5f, 0, size.x-0.5f));
+        //Gizmos.DrawWireCube(bottomCenter+Vector3.up*size.y, new Vector3(size.x-0.5f, 0, size.x-0.5f));
 
         if (currentState != targetState)
         {
-            if (currentState > targetState)
+            /*if (currentState > targetState)
                 Gizmos.color = Color.yellow;
             else if (currentState < targetState)
-                Gizmos.color = Color.red;
+                Gizmos.color = Color.red;*/
             Gizmos.DrawSphere(bottomCenter+Vector3.up*size.y, 2);
         }
     }
@@ -117,17 +116,21 @@ public class Chunk : MonoBehaviour, IComparable
 
     public void SetupAt(Vector2Int position)
     {
-        if (this.position == position && mesh != null) return;
+        if (this.position == position && HasBeenSetUpBefore()) return;
+        
         if (mesh == null) mesh = new CustomMesh(meshFilter, meshRenderer);
 
         transform.position = new Vector3(position.x, 0, position.y);
         this.position = position;
 
-        //isActive = false;
-        //thread?.Abort();
-
+        // Because all must be rebuilt
         currentState = 0;
         targetState = 0;
+    }
+
+    private bool HasBeenSetUpBefore()
+    {
+        return mesh != null;
     }
 
     public void EvolveToState(StateManager.State desiredState)
