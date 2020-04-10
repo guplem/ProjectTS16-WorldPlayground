@@ -5,15 +5,16 @@ using UnityEngine;
 
 public class MeshDataToMeshBuilt : ChunkEvolution
 {
+    public MeshDataToMeshBuilt(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.MeshBuilt;
     
-    protected override bool EvolutionWithMultithreading(Chunk chunk)
+    protected override bool EvolutionWithMultithreading()
     {
-        ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(chunk, this);
+        ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(this);
         return false;
     }
 
-    protected override bool EvolutionAtMainThread(Chunk chunk)
+    protected override bool EvolutionAtMainThread()
     {
         chunk.mesh.EnableMeshRenderer();
         chunk.mesh.UpdateMesh();

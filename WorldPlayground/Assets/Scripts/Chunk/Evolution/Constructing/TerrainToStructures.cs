@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class TerrainToStructures : ChunkEvolution
 {
+    public TerrainToStructures(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.Structures;
     
-    protected override bool EvolutionWithMultithreading(Chunk chunk)
+    protected override bool EvolutionWithMultithreading()
     {
         return true;
     }
 
-    protected override bool EvolutionAtMainThread(Chunk chunk)
+    protected override bool EvolutionAtMainThread()
     {
         return false;
     }

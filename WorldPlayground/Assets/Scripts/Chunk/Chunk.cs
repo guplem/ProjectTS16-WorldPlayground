@@ -133,7 +133,7 @@ public class Chunk : MonoBehaviour, IComparable
         return mesh != null;
     }
 
-    public void EvolveToState(StateManager.State desiredState)
+    internal void EvolveToState(StateManager.State desiredState)
     {
         if (targetState == desiredState) return;
         targetState = desiredState;
@@ -149,14 +149,14 @@ public class Chunk : MonoBehaviour, IComparable
         {
             // If generating chunk
             switch (currentState) {
-                case StateManager.State.Empty: new EmptyToTerrain().EvolveTo(this); break;
-                case StateManager.State.Terrain: new TerrainToStructures().EvolveTo(this); break;
-                case StateManager.State.Structures: new StructuresToNeighboursStructures().EvolveTo(this); break;
-                case StateManager.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications().EvolveTo(this); break;
-                case StateManager.State.LoadedModifications: new LoadedModificationsToMeshData().EvolveTo(this); break;
-                case StateManager.State.MeshData: new MeshDataToMeshBuilt().EvolveTo(this); break;
-                case StateManager.State.MeshBuilt: new MeshBuiltToColliders().EvolveTo(this); break;
-                case StateManager.State.Colliders: new CollidersToActive().EvolveTo(this); break;
+                case StateManager.State.Empty: new EmptyToTerrain(this).EvolveTo(); break;
+                case StateManager.State.Terrain: new TerrainToStructures(this).EvolveTo(); break;
+                case StateManager.State.Structures: new StructuresToNeighboursStructures(this).EvolveTo(); break;
+                case StateManager.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications(this).EvolveTo(); break;
+                case StateManager.State.LoadedModifications: new LoadedModificationsToMeshData(this).EvolveTo(); break;
+                case StateManager.State.MeshData: new MeshDataToMeshBuilt(this).EvolveTo(); break;
+                case StateManager.State.MeshBuilt: new MeshBuiltToColliders(this).EvolveTo(); break;
+                case StateManager.State.Colliders: new CollidersToActive(this).EvolveTo(); break;
                 case StateManager.State.Active: break; // Shouldn't be reached
             }
         } else {
@@ -167,7 +167,7 @@ public class Chunk : MonoBehaviour, IComparable
                 case StateManager.State.Structures: return true; // No further evolution is needed
                 case StateManager.State.NeighboursStructures: return true; // No further evolution is needed
                 case StateManager.State.LoadedModifications: return true; // No further evolution is needed
-                case StateManager.State.MeshData: currentState = StateManager.State.LoadedModifications; break;
+                case StateManager.State.MeshData: return true; // No further evolution is needed
                 case StateManager.State.MeshBuilt: currentState = StateManager.State.MeshData; break;
                 case StateManager.State.Colliders: currentState = StateManager.State.MeshBuilt; break;
                 case StateManager.State.Active: currentState = StateManager.State.Colliders; break;

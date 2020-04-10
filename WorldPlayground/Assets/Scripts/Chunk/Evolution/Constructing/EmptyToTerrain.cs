@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class EmptyToTerrain : ChunkEvolution
 {
+    public EmptyToTerrain(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.Terrain;
 
-    protected override bool EvolutionWithMultithreading(Chunk chunk)
+    protected override bool EvolutionWithMultithreading()
     {
         for (int y = 0; y < Chunk.size.y; y++)
         for (int x = 0; x < Chunk.size.x; x++)
@@ -16,7 +17,7 @@ public class EmptyToTerrain : ChunkEvolution
         return true;
     }
 
-    protected override bool EvolutionAtMainThread(Chunk chunk)
+    protected override bool EvolutionAtMainThread()
     {
         return false;
     }

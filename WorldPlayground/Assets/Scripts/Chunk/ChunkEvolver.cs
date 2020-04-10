@@ -6,17 +6,16 @@ using UnityEngine;
 
 public class ChunkEvolver
 {
-    private Dictionary<Chunk, ChunkEvolution> assistedEvolutions = new Dictionary<Chunk, ChunkEvolution>();
+    private HashSet<ChunkEvolution> assistedEvolutions = new HashSet<ChunkEvolution>();
     private HashSet<Chunk> threadedEvolutions = new HashSet<Chunk>();
 
     #region Assisted Evolution
 
-    public void AddAssistedEvolution(Chunk chunk, ChunkEvolution evolution)
+    public void AddAssistedEvolution(ChunkEvolution evolution)
     {
         lock (assistedEvolutions)
         {
-            if (!assistedEvolutions.ContainsKey(chunk))
-                assistedEvolutions.Add(chunk, evolution);
+            assistedEvolutions.Add(evolution);
         }
     }
     
@@ -26,21 +25,12 @@ public class ChunkEvolver
         {
             if (assistedEvolutions.Count <= 0) return;
             
-            List<Chunk> chunksToAssist = new List<Chunk>(assistedEvolutions.Keys);
-            foreach (Chunk chunkToAssist in chunksToAssist)
+            HashSet<ChunkEvolution> evolutionsToAssist = new HashSet<ChunkEvolution>(assistedEvolutions);
+            foreach (ChunkEvolution evolution in evolutionsToAssist)
             {
-                ChunkEvolution evolution = assistedEvolutions[chunkToAssist];
-                assistedEvolutions.Remove(chunkToAssist);
-                evolution.EvolveAtMainThread(chunkToAssist);
+                assistedEvolutions.Remove(evolution);
+                evolution.EvolveAtMainThread();
             }
-        }
-    }
-    
-    public bool IsAssistingChunk(Chunk chunk)
-    {
-        lock (assistedEvolutions)
-        {
-            return assistedEvolutions.ContainsKey(chunk);
         }
     }
 
@@ -64,7 +54,7 @@ public class ChunkEvolver
             ThreadPool.QueueUserWorkItem(EvolveChunks);
     }
 
-    public void EvolveChunks(object stateInfo) 
+    private void EvolveChunks(object stateInfo) 
     {
         int threadedEvolutionsCount;
         lock (threadedEvolutions)
