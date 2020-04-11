@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WorldGenerator : MonoBehaviour
+[System.Serializable]
+[CreateAssetMenu(fileName = "New World Generator", menuName = "World Generator")]
+public class WorldGenerator : ScriptableObject
 {
     [SerializeField] private int minSurfaceHeight = 40;
     [SerializeField] private int maxSurfaceHeight = 100;
@@ -15,31 +17,17 @@ public class WorldGenerator : MonoBehaviour
     [Space]
     [SerializeField] private Cube fillingCube;
     [SerializeField] private Cube surfaceCube;
-    
-    public static WorldGenerator Instance { get; private set; }
-    private void Awake()
-    {
-        if (Instance != null)
-        {
-            Debug.LogWarning("Multiple WorldManager exist. Destroying the last one registered.", gameObject);
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
-    }
 
-    private void Start()
+    private void CheckValues()
     {
         if (minSurfaceHeight > Chunk.size.y)
-            Debug.LogWarning("The 'minSurfaceHeight' (" + minSurfaceHeight + ") should be smaller or equal than the chunk vertical size (" + Chunk.size.y + ").", gameObject);
+            Debug.LogWarning("The 'minSurfaceHeight' (" + minSurfaceHeight + ") should be smaller or equal than the chunk vertical size (" + Chunk.size.y + ").");
         
         if (maxSurfaceHeight > Chunk.size.y)
-            Debug.LogWarning("The 'maxSurfaceHeight' (" + maxSurfaceHeight + ") should be smaller or equal than the chunk vertical size (" + Chunk.size.y + ").", gameObject);
+            Debug.LogWarning("The 'maxSurfaceHeight' (" + maxSurfaceHeight + ") should be smaller or equal than the chunk vertical size (" + Chunk.size.y + ").");
         
         if (minSurfaceHeight > maxSurfaceHeight)
-            Debug.LogWarning("The 'maxSurfaceHeight' (" + maxSurfaceHeight + ") should be bigger or equal than 'minSurfaceHeight' (" + minSurfaceHeight + ").", gameObject);
+            Debug.LogWarning("The 'maxSurfaceHeight' (" + maxSurfaceHeight + ") should be bigger or equal than 'minSurfaceHeight' (" + minSurfaceHeight + ").");
     }
 
     public Cube GetCube(Vector3 position)
@@ -57,17 +45,12 @@ public class WorldGenerator : MonoBehaviour
             return bottomEdge;
         
         
-        
-        
         // World height generation
         int terrainHeight = Mathf.RoundToInt(minSurfaceHeight + Mathf.PerlinNoise(position.x/frequency+seed, position.z/frequency+seed) * (maxSurfaceHeight-minSurfaceHeight));
         if (position.y < terrainHeight)
             return fillingCube;
         if (position.y == terrainHeight)
             return surfaceCube;
-        
-        
-        
         
         
         // Default cube

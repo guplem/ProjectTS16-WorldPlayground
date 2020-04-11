@@ -7,6 +7,7 @@ using UnityEngine;
 public class WorldManager : MonoBehaviour
 {
 
+    [SerializeField] public WorldGenerator worldGenerator;
     public static WorldManager Instance { get; private set; }
 
     private void Awake()

@@ -11,7 +11,7 @@ public class ChunkEvolver
 
     #region Assisted Evolution
 
-    public void AddAssistedEvolution(ChunkEvolution evolution)
+    internal void AddAssistedEvolution(ChunkEvolution evolution)
     {
         lock (assistedEvolutions)
         {
@@ -19,7 +19,7 @@ public class ChunkEvolver
         }
     }
     
-    public void AssistChunkEvolution()
+    internal void AssistChunkEvolution()
     {
         lock (assistedEvolutions)
         {
@@ -38,7 +38,7 @@ public class ChunkEvolver
     
     #region Threaded Evolutions
 
-    public void AddChunkToEvolve(Chunk chunk)
+    internal void AddChunkToEvolve(Chunk chunk)
     {
         lock (threadedEvolutions)
             threadedEvolutions.Add(chunk);
@@ -46,7 +46,7 @@ public class ChunkEvolver
         CreateThreadToEvolve();
     }
     
-    public void RemoveChunkToEvolve(Chunk chunk)
+    internal void RemoveChunkToEvolve(Chunk chunk)
     {
         lock (threadedEvolutions)
             threadedEvolutions.Remove(chunk);

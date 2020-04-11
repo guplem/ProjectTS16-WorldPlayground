@@ -8,28 +8,29 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class Chunk : MonoBehaviour, IComparable
 {
-    public static readonly Vector2Int size = new Vector2Int(10,100); // XZ, Y     //    16, 256 // 10, 128
+    internal static readonly Vector2Int size = new Vector2Int(10,100); // XZ, Y     //    16, 256 // 10, 128
     
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private MeshRenderer meshRenderer;
     internal CustomMesh mesh { get; private set; }
 
-    public Vector2Int position { get; private set; }
-    public Vector2Int arrayPos;
+    internal Vector2Int position { get; private set; }
+    internal Vector2Int arrayPos;
 
     internal byte[,,] chunkData = new byte[size.x,size.y,size.x]; // { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
 
     private StateManager _state = new StateManager();
-    public StateManager.State currentState {
+
+    internal StateManager.State currentState {
         get { lock (_state) { return _state.currentState;  } }
         set { lock (_state) { _state.currentState = value;  } }
     }
-    public StateManager.State targetState {
+    private StateManager.State targetState {
         get { lock (_state) { return _state.targetState;  } }
         set { lock (_state) { _state.targetState = value;  } }
     }
 
-    private void OnDrawGizmos()
+    /*private void OnDrawGizmos()
     {
         Vector3 bottomCenter = transform.position + new Vector3(size.x - 1, size.y - 1, size.x - 1) / 2;
         
@@ -49,15 +50,13 @@ public class Chunk : MonoBehaviour, IComparable
 
         if (currentState != targetState)
         {
-            /*if (currentState > targetState)
-                Gizmos.color = Color.yellow;
-            else if (currentState < targetState)
-                Gizmos.color = Color.red;*/
+            //if (currentState > targetState) Gizmos.color = Color.yellow;
+            //else if (currentState < targetState) Gizmos.color = Color.red;
             Gizmos.DrawSphere(bottomCenter+Vector3.up*size.y, 2);
         }
-    }
+    }*/
 
-// ==================== UTILITY METHODS ==================== //
+    #region Utility
 
     public Vector3 GetWorldPositionFromRelativePosition(Vector3Int vector3Int)
     {
@@ -110,7 +109,9 @@ public class Chunk : MonoBehaviour, IComparable
         return CubesManager.Instance.GetCube(chunkData[relativePositionToTheChunk.x, relativePositionToTheChunk.y, relativePositionToTheChunk.z]);
     }
 
-// ==================== WORKING METHODS ==================== //
+    #endregion
+
+    #region Configuration
 
     public void SetupAt(Vector2Int position)
     {
@@ -183,4 +184,7 @@ public class Chunk : MonoBehaviour, IComparable
         Chunk chunkToCompareTo = (Chunk) obj;
         return (int) (Vector2Int.Distance(this.position, ChunkManager.Instance.centralChunkPosition) - Vector2Int.Distance(chunkToCompareTo.position, ChunkManager.Instance.centralChunkPosition));
     }
+
+    #endregion
+
 }

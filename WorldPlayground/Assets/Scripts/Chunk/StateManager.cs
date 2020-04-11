@@ -17,6 +17,6 @@ public class StateManager
         Active
     }
 
-    public State currentState;
-    public State targetState;
+    internal State currentState;
+    internal State targetState;
 }

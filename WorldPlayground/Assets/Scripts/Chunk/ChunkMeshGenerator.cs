@@ -60,10 +60,7 @@ public static class ChunkMeshGenerator
 		    }
         }
     }
-
-
-
-
+    
     private static void AddTexture(int textureId, List<Vector2> uvs)
     {
         // ReSharper disable once PossibleLossOfFraction //The loss of fraction is intended
@@ -80,8 +77,7 @@ public static class ChunkMeshGenerator
         uvs.Add(new Vector2(x + CubesManager.normalizedBlockTextureSize, y));
         uvs.Add(new Vector2(x + CubesManager.normalizedBlockTextureSize, y + CubesManager.normalizedBlockTextureSize));
     }
-    
-    
+
     private static bool IsCubeOpaque(Chunk chunk, Vector3 cubePositionRelativeToTheChunk)
     {
         Cube cube = chunk.GetCubeFromRelativePosition(new Vector3Int((int) cubePositionRelativeToTheChunk.x,

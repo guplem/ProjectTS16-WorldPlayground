@@ -11,10 +11,12 @@ public class ChunkConfigurator
     private Chunk[] chunksToRegenerate = new Chunk[0];
     
     private Thread chunkConfiguratorThread;
-    public bool waitingForUnityWorkToEnd { get; private set; }
-    public bool waitingForUnityWorkToStart { get; private set; }
+    internal bool waitingForUnityWorkToEnd { get; private set; }
+    internal bool waitingForUnityWorkToStart { get; private set; }
 
-    public void RestructureChunks()
+    #region Restructuration process
+
+    internal void RestructureChunks()
     {
         waitingForUnityWorkToStart = false;
         
@@ -34,7 +36,7 @@ public class ChunkConfigurator
         }
 
     }
-
+    
     private void SaveChunksRestructurations() // Returns true if new chunks have been generated/chunks have been moved
     {
         // Get the positions that should have chunks at the moment
@@ -77,7 +79,11 @@ public class ChunkConfigurator
         return chunksWithPositionNotInCollection;
     }
 
-    public void UpdateWorldChunks()
+    #endregion
+
+    #region Unity work
+
+    internal void UpdateWorldChunks()
     {
         if (!waitingForUnityWorkToStart)
             Debug.LogWarning("UpdateWorldChunks shouldn't be called if 'waitingForUnityWorkToStart' is false.");
@@ -136,6 +142,10 @@ public class ChunkConfigurator
             UpdateChunksConfiguration();
     }
 
+    #endregion
+
+    #region Chunks configuration
+
     private void UpdateChunksConfiguration()
     {
         chunkConfiguratorThread?.Abort();
@@ -189,4 +199,7 @@ public class ChunkConfigurator
         } catch (InvalidOperationException) { ChunkManager.Instance.revalidateChunks = true; }
 
     }
+
+    #endregion
+    
 }

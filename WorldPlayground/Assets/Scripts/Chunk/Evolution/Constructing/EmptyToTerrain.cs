@@ -12,7 +12,7 @@ public class EmptyToTerrain : ChunkEvolution
         for (int y = 0; y < Chunk.size.y; y++)
         for (int x = 0; x < Chunk.size.x; x++)
         for (int z = 0; z < Chunk.size.x; z++)
-            chunk.chunkData[x, y, z] = WorldGenerator.Instance.GetCube(chunk.GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
+            chunk.chunkData[x, y, z] = WorldManager.Instance.worldGenerator.GetCube(chunk.GetWorldPositionFromRelativePosition(new Vector3Int(x, y, z))).byteId;
         
         return true;
     }

@@ -11,19 +11,19 @@ public class ChunkManager : MonoBehaviour
 {
     [Tooltip("The transform that will be the center of the 'game action'")]
     [SerializeField] private Transform loadingCenter;
-    public Vector2Int centralChunkPosition { get; private set; }
+    internal Vector2Int centralChunkPosition { get; private set; }
     [SerializeField] internal GameObject chunkPrefab;
     [Space]
     [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
     [SerializeField] private float timeBetweenChunkUpdates = 1f;
     [Space]
     [Tooltip("Max distance of the chunks generated at that moment.")]
-    [SerializeField] public int radiusOfGeneratedChunks = 32;
+    [SerializeField] internal int radiusOfGeneratedChunks = 32;
 
-    public List<Chunk> chunks = new List<Chunk>();
-    public Chunk[,] chunksArray = new Chunk[0,0];
-    
-    public bool revalidateChunks = false;
+    internal List<Chunk> chunks = new List<Chunk>();
+    internal Chunk[,] chunksArray = new Chunk[0,0];
+
+    internal bool revalidateChunks = false;
 
     private ChunkConfigurator chunkConfigurator;
     internal ChunkEvolver chunkEvolver;
