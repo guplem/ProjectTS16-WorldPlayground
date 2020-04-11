@@ -31,21 +31,18 @@ public class SoftwareManager : MonoBehaviour
             
             ThreadPool.GetMaxThreads(out defaultMaximumNumberOfThreads, out int _);
             ThreadPool.GetMinThreads(out defaultMinimumNumberOfThreads, out int _);
-            
-            
-            if (ThreadPool.SetMaxThreads(realDesiredMaximumNumberOfThreads, realDesiredMaximumNumberOfThreads))
-                Debug.Log("The maximum number of threads is set to " + realDesiredMaximumNumberOfThreads);
-            else
+
+            if (!ThreadPool.SetMaxThreads(realDesiredMaximumNumberOfThreads, realDesiredMaximumNumberOfThreads))
                 Debug.LogWarning("Error setting maximum number of threads. The value can not be below " + lowestAcceptableValueForMaximumNumberOfThreads);
         }
     }
     
-    private void Start()
+    /*private void Start()
     {
         ThreadPool.GetMinThreads(out int min, out int _);
         ThreadPool.GetMaxThreads(out int max, out int _);
         Debug.Log("MIN THREADS: " + min + ", MAX THREADS: " + max);
-    }
+    }*/
 
     /*private IEnumerator ReportThreadCount()
     {

@@ -18,8 +18,6 @@ public class Chunk : MonoBehaviour, IComparable
     public Vector2Int arrayPos;
 
     internal byte[,,] chunkData = new byte[size.x,size.y,size.x]; // { get; private set; } //Max qty of cubes = 256. Id range = [0, 255]
-    
-    //private Thread thread { get; set; }
 
     private StateManager _state = new StateManager();
     public StateManager.State currentState {
@@ -120,12 +118,11 @@ public class Chunk : MonoBehaviour, IComparable
         
         if (mesh == null) mesh = new CustomMesh(meshFilter, meshRenderer);
 
+        ChunkManager.Instance.chunkEvolver.RemoveChunkToEvolve(this);
+        EvolveToState(StateManager.State.Empty, true);
+        
         transform.position = new Vector3(position.x, 0, position.y);
         this.position = position;
-
-        // Because all must be rebuilt
-        currentState = 0;
-        targetState = 0;
     }
 
     private bool HasBeenSetUpBefore()
@@ -133,15 +130,18 @@ public class Chunk : MonoBehaviour, IComparable
         return mesh != null;
     }
 
-    internal void EvolveToState(StateManager.State desiredState)
+    internal void EvolveToState(StateManager.State desiredState, bool evolveInCurrentThread = false)
     {
-        if (targetState == desiredState) return;
+        if (targetState == desiredState && !evolveInCurrentThread) return;
         targetState = desiredState;
-        
-        ChunkManager.Instance.chunkEvolver.AddChunkToEvolve(this);
+
+        if (!evolveInCurrentThread)
+            ChunkManager.Instance.chunkEvolver.AddChunkToEvolve(this);
+        else
+            Evolve(evolveInCurrentThread);
     }
 
-    internal bool Evolve() // Returns true if the target state is reached. False otherwise
+    internal bool Evolve(bool evolveInCurrentThread = false) // Returns true if the target state is reached. False otherwise
     {
         if (targetState == currentState) return true;
 
@@ -149,28 +149,28 @@ public class Chunk : MonoBehaviour, IComparable
         {
             // If generating chunk
             switch (currentState) {
-                case StateManager.State.Empty: new EmptyToTerrain(this).EvolveTo(); break;
-                case StateManager.State.Terrain: new TerrainToStructures(this).EvolveTo(); break;
-                case StateManager.State.Structures: new StructuresToNeighboursStructures(this).EvolveTo(); break;
-                case StateManager.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications(this).EvolveTo(); break;
-                case StateManager.State.LoadedModifications: new LoadedModificationsToMeshData(this).EvolveTo(); break;
-                case StateManager.State.MeshData: new MeshDataToMeshBuilt(this).EvolveTo(); break;
-                case StateManager.State.MeshBuilt: new MeshBuiltToColliders(this).EvolveTo(); break;
-                case StateManager.State.Colliders: new CollidersToActive(this).EvolveTo(); break;
+                case StateManager.State.Empty: new EmptyToTerrain(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.Terrain: new TerrainToStructures(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.Structures: new StructuresToNeighboursStructures(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.NeighboursStructures: new NeighboursStructuresToLoadedModifications(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.LoadedModifications: new LoadedModificationsToMeshData(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.MeshData: new MeshDataToMeshBuilt(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.MeshBuilt: new MeshBuiltToColliders(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.Colliders: new CollidersToActive(this).EvolveTo(evolveInCurrentThread); break;
                 case StateManager.State.Active: break; // Shouldn't be reached
             }
         } else {
             // If deconstructing the chunk
             switch (currentState) {
                 case StateManager.State.Empty: break; // Shouldn't be reached
-                case StateManager.State.Terrain: return true; // No further evolution is needed
-                case StateManager.State.Structures: return true; // No further evolution is needed
-                case StateManager.State.NeighboursStructures: return true; // No further evolution is needed
-                case StateManager.State.LoadedModifications: return true; // No further evolution is needed
-                case StateManager.State.MeshData: return true; // No further evolution is needed
-                case StateManager.State.MeshBuilt: currentState = StateManager.State.MeshData; break;
-                case StateManager.State.Colliders: currentState = StateManager.State.MeshBuilt; break;
-                case StateManager.State.Active: currentState = StateManager.State.Colliders; break;
+                case StateManager.State.Terrain: currentState = targetState; break; // No further evolution is needed
+                case StateManager.State.Structures: currentState = targetState; break; // No further evolution is needed
+                case StateManager.State.NeighboursStructures: currentState = targetState; break; // No further evolution is needed
+                case StateManager.State.LoadedModifications: currentState = targetState; break; // No further evolution is needed
+                case StateManager.State.MeshData: currentState = targetState; break; // No further evolution is needed
+                case StateManager.State.MeshBuilt: new MeshBuiltToMeshData(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.Colliders: new CollidersToMeshBuilt(this).EvolveTo(evolveInCurrentThread); break;
+                case StateManager.State.Active: new ActiveToColliders(this).EvolveTo(evolveInCurrentThread); break;
             }
         }
 

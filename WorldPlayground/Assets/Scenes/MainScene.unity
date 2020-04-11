@@ -283,6 +283,15 @@ PrefabInstance:
       propertyPath: loadingCenter
       value: 
       objectReference: {fileID: 317404523}
+    - target: {fileID: 1375945945, guid: 61a096324958c9a469c03d85bc032953, type: 3}
+      propertyPath: timeBetweenChunkUpdates
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 931935318729533721, guid: 61a096324958c9a469c03d85bc032953,
+        type: 3}
+      propertyPath: desiredMaximumNumberOfThreads
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 8104386872639039257, guid: 61a096324958c9a469c03d85bc032953,
         type: 3}
       propertyPath: m_LocalPosition.x

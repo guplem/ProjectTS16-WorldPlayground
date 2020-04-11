@@ -2,20 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LoadedModificationsToMeshData : ChunkEvolution
+public class MeshBuiltToMeshData : ChunkEvolution
 {
-    public LoadedModificationsToMeshData(Chunk chunk) { this.chunk = chunk; }
+    public MeshBuiltToMeshData(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.MeshData;
     
     protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
-        ChunkMeshGenerator.PopulateMeshDataToDrawChunk(chunk, chunk.mesh, chunk.chunkData);
-        return true;
+        if (!forceEvolveArCurrentThread)
+            ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(this);
+        
+        return false;
     }
 
     protected override bool EvolutionAtMainThread()
     {
-        return false;
-    }
+        chunk.mesh.DisableMeshRenderer();
 
+        return true;
+    }
 }

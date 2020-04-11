@@ -8,9 +8,11 @@ public class MeshDataToMeshBuilt : ChunkEvolution
     public MeshDataToMeshBuilt(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.MeshBuilt;
     
-    protected override bool EvolutionWithMultithreading()
+    protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
-        ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(this);
+        if (!forceEvolveArCurrentThread)
+            ChunkManager.Instance.chunkEvolver.AddAssistedEvolution(this);
+        
         return false;
     }
 

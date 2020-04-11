@@ -9,28 +9,30 @@ public abstract class ChunkEvolution : IEqualityComparer<ChunkEvolution>
     protected Chunk chunk;
     protected abstract StateManager.State stateToEvolveTo { get; }
 
-    public void EvolveTo()
+    public void EvolveTo(bool evolveInCurrentThread = false)
     {
-        if (EvolutionWithMultithreading())
-            CompleteEvolution();
+        if (EvolutionWithMultithreading(evolveInCurrentThread))
+            CompleteEvolution(evolveInCurrentThread);
+        else if (evolveInCurrentThread)
+            EvolveAtMainThread(evolveInCurrentThread);
     }
     
-    public void EvolveAtMainThread()
+    public void EvolveAtMainThread(bool evolveInCurrentThread = false)
     {
         if (EvolutionAtMainThread())
-            CompleteEvolution();
+            CompleteEvolution(evolveInCurrentThread);
         else
             Debug.LogWarning("Evolution at main thread not completed at " + chunk.gameObject.name, chunk.gameObject);
     }
 
-    private void CompleteEvolution()
+    private void CompleteEvolution(bool evolveInCurrentThread = false)
     {
         chunk.currentState = stateToEvolveTo;
-        chunk.Evolve();
+        chunk.Evolve(evolveInCurrentThread);
     }
 
     // Must return true if the evolution is completed. False if the evolutions needs from assisted evolution
-    protected abstract bool EvolutionWithMultithreading();
+    protected abstract bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread);
     
     // Must return true if the evolution is completed. False if the evolution shouldn't be assisted
     protected abstract bool EvolutionAtMainThread();

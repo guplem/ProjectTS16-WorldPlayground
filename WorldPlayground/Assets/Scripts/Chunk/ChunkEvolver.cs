@@ -41,11 +41,15 @@ public class ChunkEvolver
     public void AddChunkToEvolve(Chunk chunk)
     {
         lock (threadedEvolutions)
-        {
             threadedEvolutions.Add(chunk);
-        }
 
         CreateThreadToEvolve();
+    }
+    
+    public void RemoveChunkToEvolve(Chunk chunk)
+    {
+        lock (threadedEvolutions)
+            threadedEvolutions.Remove(chunk);
     }
 
     private void CreateThreadToEvolve()

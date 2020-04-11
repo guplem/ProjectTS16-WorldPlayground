@@ -7,7 +7,7 @@ public class StructuresToNeighboursStructures : ChunkEvolution
     public StructuresToNeighboursStructures(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.NeighboursStructures;
     
-    protected override bool EvolutionWithMultithreading()
+    protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
         return true;
     }

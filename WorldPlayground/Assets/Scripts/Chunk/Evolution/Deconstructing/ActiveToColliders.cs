@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollidersToActive : ChunkEvolution
+public class ActiveToColliders : ChunkEvolution
 {
-    public CollidersToActive(Chunk chunk) { this.chunk = chunk; }
-    protected override StateManager.State stateToEvolveTo => StateManager.State.Active;
+    public ActiveToColliders(Chunk chunk) { this.chunk = chunk; }
+    protected override StateManager.State stateToEvolveTo => StateManager.State.Colliders;
     
     protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
