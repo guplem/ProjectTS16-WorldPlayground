@@ -14,11 +14,14 @@ public class ChunkEvolver
     internal void AddAssistedEvolution(ChunkEvolution evolution)
     {
         lock (assistedEvolutions)
-        {
             assistedEvolutions.Add(evolution);
-        }
     }
     
+    internal void RemoveAssistedEvolution(Chunk chunk)
+    {
+        lock (assistedEvolutions)
+            assistedEvolutions.Remove(new DummyEvolution(chunk));
+    }
     internal void AssistChunkEvolution()
     {
         lock (assistedEvolutions)

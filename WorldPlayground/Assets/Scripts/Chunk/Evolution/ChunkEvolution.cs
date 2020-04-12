@@ -11,6 +11,8 @@ public abstract class ChunkEvolution : IEqualityComparer<ChunkEvolution>
 
     public void EvolveTo(bool evolveInCurrentThread = false)
     {
+        if (!CanEvolve()) return;
+        
         if (EvolutionWithMultithreading(evolveInCurrentThread))
             CompleteEvolution(evolveInCurrentThread);
         else if (evolveInCurrentThread)
@@ -31,6 +33,8 @@ public abstract class ChunkEvolution : IEqualityComparer<ChunkEvolution>
         chunk.Evolve(evolveInCurrentThread);
     }
 
+    protected abstract bool CanEvolve();
+    
     // Must return true if the evolution is completed. False if the evolutions needs from assisted evolution
     protected abstract bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread);
     

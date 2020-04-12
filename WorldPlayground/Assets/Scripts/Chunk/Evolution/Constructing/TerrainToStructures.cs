@@ -6,7 +6,12 @@ public class TerrainToStructures : ChunkEvolution
 {
     public TerrainToStructures(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.Structures;
-    
+
+    protected override bool CanEvolve()
+    {
+        return true;
+    }
+
     protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
         return true;

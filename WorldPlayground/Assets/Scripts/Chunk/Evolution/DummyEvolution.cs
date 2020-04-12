@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollidersToMeshBuilt : ChunkEvolution
+public class DummyEvolution : ChunkEvolution
 {
-    public CollidersToMeshBuilt(Chunk chunk) { this.chunk = chunk; }
-    protected override StateManager.State stateToEvolveTo => StateManager.State.MeshBuilt;
+    public DummyEvolution(Chunk chunk)
+    {
+        this.chunk = chunk;
+    }
 
+    protected override StateManager.State stateToEvolveTo { get; }
     protected override bool CanEvolve()
     {
-        return true;
+        return false;
     }
 
     protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
@@ -19,6 +22,6 @@ public class CollidersToMeshBuilt : ChunkEvolution
 
     protected override bool EvolutionAtMainThread()
     {
-        return false;
+        return true;
     }
 }

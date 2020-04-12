@@ -7,6 +7,11 @@ public class EmptyToTerrain : ChunkEvolution
     public EmptyToTerrain(Chunk chunk) { this.chunk = chunk; }
     protected override StateManager.State stateToEvolveTo => StateManager.State.Terrain;
 
+    protected override bool CanEvolve()
+    {
+        return true;
+    }
+
     protected override bool EvolutionWithMultithreading(bool forceEvolveArCurrentThread)
     {
         for (int y = 0; y < Chunk.size.y; y++)

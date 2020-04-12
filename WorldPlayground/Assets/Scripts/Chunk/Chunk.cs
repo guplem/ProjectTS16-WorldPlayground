@@ -120,6 +120,7 @@ public class Chunk : MonoBehaviour, IComparable
         if (mesh == null) mesh = new CustomMesh(meshFilter, meshRenderer);
 
         ChunkManager.Instance.chunkEvolver.RemoveChunkToEvolve(this);
+        ChunkManager.Instance.chunkEvolver.RemoveAssistedEvolution(this);
         EvolveToState(StateManager.State.Empty, true);
         
         transform.position = new Vector3(position.x, 0, position.y);

@@ -82,7 +82,6 @@ public class ChunkManager : MonoBehaviour
             
             chunkConfigurator.UpdateWorldChunks();
         }
-            
     }
 
     private IEnumerator UpdateChunks() {
