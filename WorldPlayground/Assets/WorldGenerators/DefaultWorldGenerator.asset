@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45755c6a0d313be469671e8972e12291, type: 3}
+  m_Name: DefaultWorldGenerator
+  m_EditorClassIdentifier: 
+  empty: {fileID: 11400000, guid: ba555b44ba106864a833a69e6fe07ed9, type: 2}
+  bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
+  biomesBlending: 20
+  biomes:
+  - {fileID: 11400000, guid: 0c44ee8dbc2003648bad1e544c2a94f6, type: 2}
+  - {fileID: 11400000, guid: 41f0fe4b3514ffc4c8a0c98a6f63eceb, type: 2}
+  minElevation: 20

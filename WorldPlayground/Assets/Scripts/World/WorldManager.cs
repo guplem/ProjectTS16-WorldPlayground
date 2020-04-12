@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class WorldManager : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class WorldManager : MonoBehaviour
         else
         {
             Instance = this;
+            short seed = Convert.ToInt16(Random.Range(0, ushort.MaxValue) - short.MaxValue);
+            worldGenerator.Setup(seed);
         }
     }
     
