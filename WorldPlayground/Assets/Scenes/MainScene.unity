@@ -287,6 +287,10 @@ PrefabInstance:
       propertyPath: timeBetweenChunkUpdates
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 1375945945, guid: 61a096324958c9a469c03d85bc032953, type: 3}
+      propertyPath: radiusOfGeneratedChunks
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 931935318729533721, guid: 61a096324958c9a469c03d85bc032953,
         type: 3}
       propertyPath: desiredMaximumNumberOfThreads

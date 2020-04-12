@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 200
   smoothness: 230
-  maxAdditionalElevation: 65
+  maxAdditionalElevation: 20
   fillingCube: {fileID: 11400000, guid: a0597cb851c8bd64b902f94241f0bce1, type: 2}
   surfaceCube: {fileID: 11400000, guid: 0e9a170a0fff2ee48bb5c22d26205e9f, type: 2}

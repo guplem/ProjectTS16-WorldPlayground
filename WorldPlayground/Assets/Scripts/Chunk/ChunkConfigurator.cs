@@ -195,6 +195,7 @@ public class ChunkConfigurator
                     chunk.EvolveToState((StateManager.State) desiredState);
                 }
             }
+            ChunkManager.Instance.chunkEvolver.SortChunksToEvolve();
 
         } catch (InvalidOperationException) { ChunkManager.Instance.revalidateChunks = true; }
 

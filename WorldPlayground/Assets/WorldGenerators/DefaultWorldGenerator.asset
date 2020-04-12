@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   empty: {fileID: 11400000, guid: ba555b44ba106864a833a69e6fe07ed9, type: 2}
   bottomEdge: {fileID: 11400000, guid: 45f321ab365a5e14a8241abdf37f5a5e, type: 2}
-  biomesBlending: 20
+  biomesBlending: 8
   biomes:
   - {fileID: 11400000, guid: 0c44ee8dbc2003648bad1e544c2a94f6, type: 2}
   - {fileID: 11400000, guid: 41f0fe4b3514ffc4c8a0c98a6f63eceb, type: 2}

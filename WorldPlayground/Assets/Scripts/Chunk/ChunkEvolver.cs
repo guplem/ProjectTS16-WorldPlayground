@@ -7,7 +7,7 @@ using UnityEngine;
 public class ChunkEvolver
 {
     private HashSet<ChunkEvolution> assistedEvolutions = new HashSet<ChunkEvolution>();
-    private HashSet<Chunk> threadedEvolutions = new HashSet<Chunk>();
+    private List<Chunk> threadedEvolutions = new List<Chunk>();
 
     #region Assisted Evolution
 
@@ -41,9 +41,16 @@ public class ChunkEvolver
     internal void AddChunkToEvolve(Chunk chunk)
     {
         lock (threadedEvolutions)
-            threadedEvolutions.Add(chunk);
+            if (!threadedEvolutions.Contains(chunk))
+                threadedEvolutions.Add(chunk);
 
         CreateThreadToEvolve();
+    }
+
+    internal void SortChunksToEvolve()
+    {
+        lock (threadedEvolutions)
+            threadedEvolutions.Sort();
     }
     
     internal void RemoveChunkToEvolve(Chunk chunk)

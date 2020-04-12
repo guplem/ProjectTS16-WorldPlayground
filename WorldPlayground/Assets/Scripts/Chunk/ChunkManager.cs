@@ -14,9 +14,6 @@ public class ChunkManager : MonoBehaviour
     internal Vector2Int centralChunkPosition { get; private set; }
     [SerializeField] internal GameObject chunkPrefab;
     [Space]
-    [Tooltip("Time between each check of the chunks that should be generated at that moment.")]
-    [SerializeField] private float timeBetweenChunkUpdates = 1f;
-    [Space]
     [Tooltip("Max distance of the chunks generated at that moment.")]
     [SerializeField] internal int radiusOfGeneratedChunks = 32;
 
@@ -98,7 +95,7 @@ public class ChunkManager : MonoBehaviour
                     chunkConfigurator.RestructureChunks();
                 }
 
-            yield return new WaitForSeconds(timeBetweenChunkUpdates);
+            yield return new WaitForSeconds(radiusOfGeneratedChunks/40); // The time between chunks updates is dynamic. It depends on the number of loaded chunks
         }
     }
     
