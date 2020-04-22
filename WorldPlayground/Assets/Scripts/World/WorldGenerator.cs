@@ -8,14 +8,14 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New World Generator", menuName = "World Generator")]
 public class WorldGenerator : ScriptableObject
 {
-
-    private short seed;
     [Space]
     [SerializeField] public Cube empty;
     [SerializeField] private Cube bottomEdge;
+    [SerializeField] public int minElevation = 20;
+    [Space]
     [SerializeField] private float biomesBlending = 20f;
     [SerializeField] private List<Biome> biomes;
-    [SerializeField] public int minElevation = 20;
+    
     
     public void Setup(short seed)
     {
